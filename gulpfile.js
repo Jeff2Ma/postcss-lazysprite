@@ -25,7 +25,9 @@ gulp.task('test', function () {
 gulp.task('css', function () {
 	return gulp.src('./test/src/css/index.css')
 		.pipe(postcss([lazysprite({
-
+			imagePath:'./test/src/slice',
+			spritePath: './test/dist/slice',
+			outputDimensions: true
 		})]))
 		.pipe(gulp.dest('./test/dist/css'));
 });
@@ -39,7 +41,7 @@ gulp.task('bilo', function () {
 		.pipe(gulp.dest('./test/dist/css'));
 });
 
-gulp.task('default', ['watch','css','gulp-autoreload']);
+gulp.task('default', ['watch','css']);
 
 gulp.task('watch', function () {
 	// gulp.watch(watchFiles, ['css', 'test', 'lint']);
