@@ -61,7 +61,8 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 		background-image: url(../../dist/slice/file@2x.png); 
 		background-position: -90px 0; 
 		background-size: 170px 170px; 
-		width: 80px; height: 80px;
+		width: 80px; 
+		height: 80px;
 	}
 }
 ```

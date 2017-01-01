@@ -1,0 +1,18 @@
+/**
+* test demo.
+*/
+
+
+@lazysprite "filetype";
+
+.content{
+	width: 400px;
+	margin: 0 auto;
+}
+
+.content i{
+	display: inline-block;
+	margin-right: 10px;
+}
+
+

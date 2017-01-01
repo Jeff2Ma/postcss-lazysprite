@@ -1,17 +1,17 @@
 {
   "name": "postcss-lazysprite",
-  "version": "0.0.1",
-  "description": "A PostCSS plugin that generates sprites and grounded by finder.",
+  "version": "0.0.2",
+  "description": "A PostCSS plugin that generates sprites form the directory of images automatically.",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
     "async": "^2.1.4",
-    "chalk": "^1.1.3",
     "gulp-util": "^3.0.8",
     "lodash": "^4.0.0",
     "md5": "^2.2.1",
+    "mkdirp": "^0.5.1",
     "postcss": "^5.2.4",
     "q": "^1.4.1",
     "spritesmith": "^3.1.0"
@@ -30,7 +30,7 @@
     "vinyl-fs": "^2.4.3"
   },
   "scripts": {
-    "test": "mocha --repotter spec test"
+    "test": "gulp css"
   },
   "repository": {
     "type": "git",

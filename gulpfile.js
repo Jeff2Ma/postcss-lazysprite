@@ -1,7 +1,6 @@
 var gulp = require('gulp');
 var postcss = require('gulp-postcss');
 var lazysprite = require('./index.js');
-var bilo = require('./bilo.js');
 var mocha = require('gulp-mocha');
 // gulp autoreload
 var spawn = require('child_process').spawn;
@@ -22,8 +21,13 @@ gulp.task('test', function () {
 		.pipe(mocha({ timeout: 1000000 }));
 });
 
+gulp.task('htmlcopy', function () {
+	return gulp.src(['./test/src/html/index.html'],{base: './test/src/html/'})
+		.pipe(gulp.dest('./test/dist/html/'));
+});
+
 gulp.task('css', function () {
-	return gulp.src('./test/src/css/index.css')
+	return gulp.src('./test/src/css/*.css')
 		.pipe(postcss([lazysprite({
 			imagePath:'./test/src/slice',
 			spritePath: './test/dist/slice',
@@ -32,16 +36,7 @@ gulp.task('css', function () {
 		.pipe(gulp.dest('./test/dist/css'));
 });
 
-gulp.task('bilo', function () {
-	return gulp.src('./test/src/css/bilo.css')
-		.pipe(postcss([bilo({
-			imagePath:'./test/src/slice',
-			spritePath: './test/dist/slice'
-		})]))
-		.pipe(gulp.dest('./test/dist/css'));
-});
-
-gulp.task('default', ['watch','css']);
+gulp.task('default', ['htmlcopy','css', 'watch']);
 
 gulp.task('watch', function () {
 	// gulp.watch(watchFiles, ['css', 'test', 'lint']);
@@ -51,7 +46,6 @@ gulp.task('watch', function () {
 gulp.task('gulp-autoreload', function() {
 	// Store current process if any
 	var p;
-
 	gulp.watch(['gulpfile.js','index.js'], spawnChildren);
 	// Comment the line below if you start your server by yourslef anywhere else
 	spawnChildren();
