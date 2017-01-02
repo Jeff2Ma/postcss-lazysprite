@@ -3,7 +3,7 @@
 */
 
 
-@lazysprite "filetype";
+@lazysprite "./filetype";
 
 .content{
 	width: 400px;

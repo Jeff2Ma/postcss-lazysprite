@@ -93,6 +93,11 @@ function collectImages(css, opts) {
 		// 遍历雪碧图源图片 TODO: 改成异步方式
 		var files = fs.readdirSync(imageDir);
 		files.forEach(function (filename) {
+
+			// 需检测为png 图片
+			var reg = /\.(png|svg)\b/i;
+			if (!reg.test(filename)) {return;}
+
 			var image = {
 				path: null,
 				url: null,
@@ -241,6 +246,8 @@ function runSpriteSmith(images, opts) {
 
 				checkstring = md5(checkstring.join('&'));
 
+				log(checkstring);
+
 				// get data from cache (avoid spritesmith)
 				if (cache[checkstring]) {
 					var deferred = Q.defer();
@@ -256,7 +263,7 @@ function runSpriteSmith(images, opts) {
 						temp = temp.split(GROUP_DELIMITER);
 						temp.shift();
 
-						// Append info about sprite group
+					  	// Append info about sprite group
 						result.groups = temp.map(mask(false));
 
 						// cache - clean old
