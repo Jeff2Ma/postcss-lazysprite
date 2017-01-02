@@ -1,7 +1,7 @@
 var path = require('path');
 var fs = require('fs');
 var postcss = require('postcss');
-var lodash = require('lodash');
+var _ = require('lodash');
 var Q = require('q');
 var async = require('async');
 var spritesmith = require('spritesmith').run;
@@ -31,19 +31,22 @@ var cacheIndex = {};
 /**
  * main function
  */
-module.exports = postcss.plugin('postcss-lazysprite', function (opts) {
-	// opts
-	opts = opts || {};
-	opts.groupBy = opts.groupBy || [];
-	opts.padding = opts.padding ? opts.padding : 10;
-	// opts.outputDimensions = opts.outputDimensions || true;
+module.exports = postcss.plugin('postcss-lazysprite', function (options) {
+	// options
+	options = options || {};
+	options.groupBy = options.groupBy || [];
+	options.padding = options.padding ? options.padding : 10;
+	// options.outputDimensions = options.outputDimensions || true;
+
+	// 命名空间
+	options.namespace = options.namespace || 'ww_';
 
 	// paths
-	opts.imagePath = path.resolve(process.cwd(), opts.imagePath || '');
-	opts.spritePath = path.resolve(process.cwd(), opts.spritePath || '');
+	options.imagePath = path.resolve(process.cwd(), options.imagePath || '');
+	options.spritePath = path.resolve(process.cwd(), options.spritePath || '');
 
 	// Group retina images
-	opts.groupBy.unshift(function (image) {
+	options.groupBy.unshift(function (image) {
 		if (image.ratio > 1) {
 			return '@' + image.ratio + 'x';
 		}
@@ -54,17 +57,17 @@ module.exports = postcss.plugin('postcss-lazysprite', function (opts) {
 		// if file path
 		return Q
 		// 准备工作
-		.all([collectImages(css, opts), opts])
+		.all([collectImages(css, options), options])
 		.spread(applyGroupBy)
-		.spread(function (images, opts) {
-			return setTokens(images, opts, css);
+		.spread(function (images, options) {
+			return setTokens(images, options, css);
 		})
 		// 合成雪碧图及生成样式
 		.spread(runSpriteSmith)
 		.spread(saveSprites)
 		.spread(mapSpritesProperties)
-		.spread(function (images, opts, sprites) {
-			return updateReferences(images, opts, sprites, css);
+		.spread(function (images, options, sprites) {
+			return updateReferences(images, options, sprites, css);
 		});
 	};
 });
@@ -73,9 +76,10 @@ module.exports = postcss.plugin('postcss-lazysprite', function (opts) {
  * 从CSS 规则中获取到目标图片
  *
  */
-function collectImages(css, opts) {
+function collectImages(css, options) {
 	var images = [];
-	var stylesheetPath = opts.stylesheetPath || path.dirname(css.source.input.file);
+	// TODO: 需要修正下 stylesheetPath 的处理
+	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
 		throw 'Stylesheets path is undefined, please use option stylesheetPath!';
@@ -87,8 +91,8 @@ function collectImages(css, opts) {
 		// 从 @lazysprite 获取到目标目录
 		var params = space(atRule.params);
 		var sliceDir = params[0];
-		sliceDir = lodash.trim(sliceDir, "'\"()");
-		var imageDir = path.resolve(opts.imagePath,sliceDir);
+		sliceDir = _.trim(sliceDir, "'\"()");
+		var imageDir = path.resolve(options.imagePath,sliceDir);
 
 		// 遍历雪碧图源图片 TODO: 改成异步方式
 		var files = fs.readdirSync(imageDir);
@@ -126,16 +130,16 @@ function collectImages(css, opts) {
 		});
 
 	});
-	return lodash.uniqWith(images, lodash.isEqual);
+	return _.uniqWith(images, _.isEqual);
 }
 
 /**
  * 分组
  *
  */
-function applyGroupBy(images, opts) {
+function applyGroupBy(images, options) {
 	return Q.Promise(function (resolve, reject) {
-		async.reduce(opts.groupBy, images, function (images, group, next) {
+		async.reduce(options.groupBy, images, function (images, group, next) {
 			async.map(images, function (image, done) {
 				new Q(group(image))
 					.then(function (group) {
@@ -150,7 +154,7 @@ function applyGroupBy(images, opts) {
 			if (err) {
 				return reject(err);
 			}
-			resolve([images, opts]);
+			resolve([images, options]);
 		});
 	});
 }
@@ -159,7 +163,7 @@ function applyGroupBy(images, opts) {
  * 生成CSS Rules 并插入必要的信息
  *
  */
-function setTokens(images, opts, css) {
+function setTokens(images, options, css) {
 	return Q.Promise(function (resolve) {
 
 		css.walkAtRules("lazysprite", function (atRule) {
@@ -169,7 +173,7 @@ function setTokens(images, opts, css) {
 			var mediaAtRule = postcss.atRule({ name: 'media', params: params });
 
 			// 遍历信息并生成相应的样式
-			lodash.forEach(images, function (image, index) {
+			_.forEach(images, function (image, index) {
 				image.token = postcss.comment({
 					text: image.path,
 					raws: {
@@ -197,7 +201,7 @@ function setTokens(images, opts, css) {
 			// 删除 @lazysprite
 			atRule.remove();
 		});
-		resolve([images, opts]);
+		resolve([images, options]);
 	});
 }
 
@@ -205,9 +209,9 @@ function setTokens(images, opts, css) {
  * 通过 SpriteSmith 生成雪碧图
  *
  */
-function runSpriteSmith(images, opts) {
+function runSpriteSmith(images, options) {
 	return Q.Promise(function (resolve, reject) {
-		var all = lodash
+		var all = _
 			.chain(images)
 			.groupBy(function (image) {
 				var temp;
@@ -218,14 +222,14 @@ function runSpriteSmith(images, opts) {
 				return temp.join(GROUP_DELIMITER);
 			})
 			.map(function (images, temp) {
-				var config = lodash.merge({}, opts, {
-					src: lodash.map(images, 'path')
+				var config = _.merge({}, options, {
+					src: _.map(images, 'path')
 				});
 				var ratio;
 
 				// Enlarge padding for retina images
 				if (areAllRetina(images)) {
-					ratio = lodash
+					ratio = _
 						.chain(images)
 						.flatMap('ratio')
 						.uniq()
@@ -240,13 +244,13 @@ function runSpriteSmith(images, opts) {
 
 				// collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
-				lodash.each(config.src, function (image) {
+				_.each(config.src, function (image) {
 					checkstring.push(image + '=' + md5(fs.readFileSync(image).toString()));
 				});
 
 				checkstring = md5(checkstring.join('&'));
 
-				log(checkstring);
+				// log(checkstring);
 
 				// get data from cache (avoid spritesmith)
 				if (cache[checkstring]) {
@@ -283,7 +287,7 @@ function runSpriteSmith(images, opts) {
 
 		Q.all(all)
 			.then(function (results) {
-				resolve([images, opts, results]);
+				resolve([images, options, results]);
 			})
 			.catch(function (err) {
 				if (err) {
@@ -297,17 +301,17 @@ function runSpriteSmith(images, opts) {
  * 保存雪碧图
  *
  */
-function saveSprites(images, opts, sprites) {
+function saveSprites(images, options, sprites) {
 	return Q.Promise(function (resolve, reject) {
 
-		if (!fs.existsSync(opts.spritePath)) {
-			mkdirp.sync(opts.spritePath);
+		if (!fs.existsSync(options.spritePath)) {
+			mkdirp.sync(options.spritePath);
 		}
 
-		var all = lodash
+		var all = _
 			.chain(sprites)
 			.map(function (sprite) {
-				sprite.path = makeSpritePath(opts, sprite.groups);
+				sprite.path = makeSpritePath(options, sprite.groups);
 
 				// if this file is up to date
 				if (sprite.isFromCache) {
@@ -328,7 +332,7 @@ function saveSprites(images, opts, sprites) {
 
 		Q.all(all)
 			.then(function (sprites) {
-				resolve([images, opts, sprites]); })
+				resolve([images, options, sprites]); })
 			.catch(function (err) {
 				if (err) {
 					reject(err);
@@ -341,13 +345,13 @@ function saveSprites(images, opts, sprites) {
  * 为每张图片标记位置信息
  *
  */
-function mapSpritesProperties(images, opts, sprites) {
+function mapSpritesProperties(images, options, sprites) {
 	return Q.Promise(function (resolve) {
 
-		sprites = lodash.map(sprites, function (sprite) {
-			return lodash.map(sprite.coordinates, function (coordinates, imagePath) {
+		sprites = _.map(sprites, function (sprite) {
+			return _.map(sprite.coordinates, function (coordinates, imagePath) {
 
-				return lodash.merge(lodash.find(images, { path: imagePath }), {
+				return _.merge(_.find(images, { path: imagePath }), {
 					coordinates: coordinates,
 					spritePath: sprite.path,
 					properties: sprite.properties
@@ -355,7 +359,7 @@ function mapSpritesProperties(images, opts, sprites) {
 			});
 		});
 
-		resolve([images, opts, sprites]);
+		resolve([images, options, sprites]);
 	});
 }
 
@@ -363,7 +367,7 @@ function mapSpritesProperties(images, opts, sprites) {
  * 更新对应的CSS 样式
  *
  */
-function updateReferences(images, opts, sprites, css) {
+function updateReferences(images, options, sprites, css) {
 	return Q.Promise(function (resolve) {
 		css.walkComments(function (comment) {
 			var rule, image, backgroundImage, backgroundPosition, backgroundSize;
@@ -372,7 +376,7 @@ function updateReferences(images, opts, sprites, css) {
 			if (isToken(comment)) {
 
 				// 通过匹配注释中的路径找到目标的 Rule
-				image = lodash.find(images, { path: comment.text });
+				image = _.find(images, { path: comment.text });
 
 				if (image) {
 					// Generate correct ref to the sprite
@@ -394,7 +398,7 @@ function updateReferences(images, opts, sprites, css) {
 
 					// Output the dimensions
 					rule = backgroundImage.parent;
-					if (opts.outputDimensions) {
+					if (options.outputDimensions) {
 						['height', 'width'].forEach(function (prop) {
 							rule.insertAfter(
 								backgroundImage,
@@ -422,13 +426,13 @@ function updateReferences(images, opts, sprites, css) {
 			}
 		});
 
-		resolve([images, opts, sprites, css]);
+		resolve([images, options, sprites, css]);
 	});
 }
 
 
-function makeSpritePath(opts, groups) {
-	var base = opts.spritePath;
+function makeSpritePath(options, groups) {
+	var base = options.spritePath;
 	var file = path.resolve(base, groups.join('.') + '.png');
 	return file.replace('.@', '@');
 }
@@ -441,10 +445,10 @@ function mask(toggle) {
 	};
 }
 
-function resolveUrl(image, opts) {
+function resolveUrl(image, options) {
 	var results;
 	if (/^\//.test(image.url)) {
-		results = path.resolve(opts.imagePath, image.url.replace(/^\//, ''));
+		results = path.resolve(options.imagePath, image.url.replace(/^\//, ''));
 	} else {
 		results = path.resolve(image.stylesheetPath, image.url);
 	}
@@ -463,7 +467,7 @@ function isToken(comment) {
  *
  */
 function getBackgroundImageUrl(image) {
-	var template = lodash.template('url(<%= image.spriteRef %>)');
+	var template = _.template('url(<%= image.spriteRef %>)');
 	return template({ image: image });
 }
 
@@ -474,7 +478,7 @@ function getBackgroundImageUrl(image) {
 function getBackgroundPosition(image) {
 	var x = -1 * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
 	var y = -1 * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
-	var template = lodash.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
+	var template = _.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
 
 	return template({ x: x, y: y });
 }
@@ -486,7 +490,7 @@ function getBackgroundPosition(image) {
 function getBackgroundSize(image) {
 	var x = image.properties.width / image.ratio;
 	var y = image.properties.height / image.ratio;
-	var template = lodash.template('<%= x %>px <%= y %>px');
+	var template = _.template('<%= x %>px <%= y %>px');
 
 	return template({ x: x, y: y });
 }
@@ -504,7 +508,7 @@ function isRetinaImage(url) {
  */
 function getRetinaRatio(url) {
 	var matches = /@(\d)x\.[a-z]{3,4}$/gi.exec(url.split('#')[0]);
-	var ratio   = lodash.parseInt(matches[1]);
+	var ratio   = _.parseInt(matches[1]);
 	return ratio;
 }
 
@@ -513,7 +517,7 @@ function getRetinaRatio(url) {
  *
  */
 function areAllRetina(images) {
-	return lodash.every(images, function (image) {
+	return _.every(images, function (image) {
 		return image.ratio > 1;
 	});
 }

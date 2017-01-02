@@ -30,6 +30,7 @@ gulp.task('css', function () {
 	return gulp.src('./test/src/css/*.css')
 		.pipe(postcss([lazysprite({
 			imagePath:'./test/src/slice',
+			// stylesheetPath: '../dist',
 			spritePath: './test/dist/slice',
 			outputDimensions: true
 		})]))
