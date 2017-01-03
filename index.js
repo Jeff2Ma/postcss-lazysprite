@@ -39,9 +39,9 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	// options.outputDimensions = options.outputDimensions || true;
 
 	// 命名空间
-	options.namespace = options.namespace || 'ww_';
+	options.nameSpace = options.nameSpace || '';
 
-	// paths
+	// 其它路径
 	options.imagePath = path.resolve(process.cwd(), options.imagePath || '');
 	options.spritePath = path.resolve(process.cwd(), options.spritePath || '');
 
@@ -178,6 +178,7 @@ function setTokens(images, options, css) {
 					text: image.path,
 					raws: {
 						before: ' ',
+						// before: '\n    ', // 设置这个就能控制decl 的缩进，但是效果不好
 						left: '@replace|',
 						right: ''
 					}
@@ -185,12 +186,13 @@ function setTokens(images, options, css) {
 
 				// 二倍图
 				if (image.ratio > 1) {
-					var retinaRule = postcss.rule({ selector:'.icon-'+image.selector});
+					// 增加 source 参数以便source map 能正常工作
+					var retinaRule = postcss.rule({ selector:'.'+ options.nameSpace +image.selector, source: atRule.source });
 					retinaRule.append(image.token);
 					mediaAtRule.append(retinaRule);
 				} else {
 					 // 一倍图
-					var singleRule = postcss.rule({ selector:'.icon-'+image.selector});
+					var singleRule = postcss.rule({ selector:'.'+ options.nameSpace +image.selector, source: atRule.source });
 					singleRule.append(image.token);
 					atRuleParent.append(singleRule);
 				}
@@ -385,7 +387,7 @@ function updateReferences(images, options, sprites, css) {
 
 					backgroundImage = postcss.decl({
 						prop: 'background-image',
-						value: getBackgroundImageUrl(image)
+						value: getBackgroundImageUrl(image),
 					});
 
 					backgroundPosition = postcss.decl({
@@ -397,16 +399,15 @@ function updateReferences(images, options, sprites, css) {
 					comment.replaceWith(backgroundImage);
 
 					// Output the dimensions
+					// 仅当在一倍的情况下才输出 width/height CSS
 					rule = backgroundImage.parent;
-					if (options.outputDimensions) {
+					if (options.outputDimensions && image.ratio == 1) {
 						['height', 'width'].forEach(function (prop) {
 							rule.insertAfter(
 								backgroundImage,
 								postcss.decl({
 									prop: prop,
-									value: (image.ratio > 1 ?
-										image.coordinates[prop] / image.ratio :
-										image.coordinates[prop]) + 'px',
+									value: image.coordinates[prop] + 'px'
 								})
 							);
 						});
@@ -452,7 +453,6 @@ function resolveUrl(image, options) {
 	} else {
 		results = path.resolve(image.stylesheetPath, image.url);
 	}
-
 	// get rid of get params and hash;
 	return results.split('#')[0].split('?')[0];
 }

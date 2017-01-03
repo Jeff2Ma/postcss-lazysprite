@@ -2,8 +2,15 @@
 * test demo.
 */
 
-
 @lazysprite "./filetype";
+
+body {
+	position: relative;
+	font-size: 14px;
+	font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
+	font-weight: 400;
+	-webkit-font-smoothing: antialiased;
+}
 
 .content{
 	width: 400px;
@@ -14,5 +21,3 @@
 	display: inline-block;
 	margin-right: 10px;
 }
-
-
