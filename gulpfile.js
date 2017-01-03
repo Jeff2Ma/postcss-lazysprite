@@ -2,11 +2,13 @@ var gulp = require('gulp');
 var postcss = require('gulp-postcss');
 var lazysprite = require('./index.js');
 var mocha = require('gulp-mocha');
+var sourcemaps = require('gulp-sourcemaps');
+var perfectionist = require('perfectionist');
 // gulp autoreload
 var spawn = require('child_process').spawn;
 
 var files = ['index.js'];
-var watchFiles = ['index.js', 'test/**/*'];
+var watchFiles = ['index.js', 'gulpfile.js', 'test/src/**/**'];
 
 gulp.task('lint', function () {
 	var eslint = require('gulp-eslint');
@@ -28,12 +30,17 @@ gulp.task('htmlcopy', function () {
 
 gulp.task('css', function () {
 	return gulp.src('./test/src/css/*.css')
+		.pipe(sourcemaps.init())
 		.pipe(postcss([lazysprite({
 			imagePath:'./test/src/slice',
-			// stylesheetPath: '../dist',
-			spritePath: './test/dist/slice',
+			stylesheetPath: './test/dist/css',
+			spritePath: './test/dist/sprites',
+			nameSpace: 'icon-',
 			outputDimensions: true
+		}), perfectionist({
+			maxAtRuleLength: false
 		})]))
+		.pipe(sourcemaps.write("."))
 		.pipe(gulp.dest('./test/dist/css'));
 });
 

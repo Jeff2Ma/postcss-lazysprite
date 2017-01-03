@@ -13,12 +13,11 @@ var space = postcss.list.space;
 
 // 构建 @media 的查询规则
 var defaultResolutions = [
-	'(min--moz-device-pixel-ratio: 1.5)',
-	'(-o-min-device-pixel-ratio: 3/2)',
-	'(-webkit-min-device-pixel-ratio: 1.5)',
-	'(min-device-pixel-ratio: 1.5)',
-	'(min-resolution: 144dpi)',
-	'(min-resolution: 1.5dppx)'
+	'only screen and (-o-min-device-pixel-ratio: 3/2)',
+	'only screen and (-webkit-min-device-pixel-ratio: 2)',
+	'only screen and (min--moz-device-pixel-ratio: 2)',
+	'only screen and (-webkit-min-device-pixel-ratio: 2.5)',
+	'only screen and (min-resolution: 240dpi)'
 ];
 
 var GROUP_DELIMITER   = '.';
@@ -431,7 +430,10 @@ function updateReferences(images, options, sprites, css) {
 	});
 }
 
-
+/**
+ * 设置产生的雪碧图文件名
+ *
+ */
 function makeSpritePath(options, groups) {
 	var base = options.spritePath;
 	var file = path.resolve(base, groups.join('.') + '.png');
@@ -457,7 +459,10 @@ function resolveUrl(image, options) {
 	return results.split('#')[0].split('?')[0];
 }
 
-// 正则匹配 @replace 的注释
+/**
+ * 正则匹配 @replace 的注释
+ *
+ */
 function isToken(comment) {
 	return /@replace/gi.test(comment.toString());
 }

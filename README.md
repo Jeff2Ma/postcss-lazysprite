@@ -40,36 +40,32 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 
 ```CSS
 /* ./dist/css/index.css */
-.icon-doc{ 
-	background-image: url(../../dist/slice/file.png); 
-	background-position: 0 0; 
-	width: 80px; 
-	height: 80px;
+.icon-doc {
+    background-image: url(../sprites/sprites-filetype.png);
+    background-position: 0 0;
+    width: 80px;
+    height: 80px;
 }
 
-.icon-pdf{ 
-	background-image: url(../../dist/slice/file.png); 
-	background-position: -90px 0; 
-	width: 80px; 
-	height: 80px;
+.icon-pdf {
+    background-image: url(../sprites/sprites-filetype.png);
+    background-position: -90px 0;
+    width: 80px;
+    height: 80px;
 }
 
-@media (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5), (min-resolution: 144dpi), (min-resolution: 1.5dppx){
-	.icon-doc{ 
-		background-image: url(../../dist/slice/file@2x.png); 
-		background-position: 0 0; 
-		background-size: 170px 170px;
-		width: 80px; 
-		height: 80px;
-	}
+@media only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-webkit-min-device-pixel-ratio: 2.5), only screen and (min-resolution: 240dpi) {
+    .icon-doc {
+        background-image: url(../sprites/sprites-filetype@2x.png);
+        background-position: 0 0;
+        background-size: 170px 170px;
+    }
 
-	.icon-pdf{ 
-		background-image: url(../../dist/slice/file@2x.png); 
-		background-position: -90px 0; 
-		background-size: 170px 170px; 
-		width: 80px; 
-		height: 80px;
-	}
+    .icon-pdf {
+        background-image: url(../sprites/sprites-filetype@2x.png);
+        background-position: -90px 0;
+        background-size: 170px 170px;
+    }
 }
 ```
 
@@ -78,6 +74,8 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 - Simple and easy, just need to put your all images to the special folder.
 
 - Retina support.
+
+- Fully work well with Sourcemap.
 
 - Cache way and good perfomance to run faster.
 
@@ -102,7 +100,9 @@ gulp.task('css', function () {
 	return gulp.src('./test/src/css/*.css')
 		.pipe(postcss([lazysprite({
 			imagePath:'./test/src/slice',
+			stylesheetPath: './test/dist/css',
 			spritePath: './test/dist/slice',
+			nameSpace: 'icon-',
 			outputDimensions: true
 		})]))
 		.pipe(gulp.dest('./test/dist/css'));
@@ -131,6 +131,21 @@ gulp.task('css', function () {
 
 - Default: `./`
 - Required: `true`
+
+#### nameSpace
+
+> NameSpace(Prefix) of the class name of each image. The `className` = `nameSpace` + `fileName`.
+
+- Default: `''`
+- Required: `false`
+
+#### outputDimensions
+
+> Deside whether output `width` & `height` properties.
+
+- Default: `true`
+- Required: `false`
+
 
 ## Contributing
 
