@@ -54,7 +54,7 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
     height: 80px;
 }
 
-@media only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-webkit-min-device-pixel-ratio: 2.5), only screen and (min-resolution: 240dpi) {
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio:2), only screen and (-o-min-device-pixel-ratio:2/1), only screen and (min-device-pixel-ratio:2), only screen and (min-resolution:2dppx), only screen and (min-resolution:192dpi) {
     .filetype__icon-doc {
         background-image: url(../sprites/filetype@2x.png);
         background-position: 0 0;
@@ -71,11 +71,11 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 
 ## Features
 
-- Simple and easy, just need to put your all images to the special folder.
+- Simple and easy, just need to put your images to the special folder.
 
-- Retina support.
+- Retina support (@2x, @3x).
 
-- Fully work well with Sourcemap.
+- Fully work well with Source Map.
 
 - Cache way and good perfomance to run faster.
 

@@ -12,12 +12,20 @@ var gutil = require('gulp-util');
 var space = postcss.list.space;
 
 // 构建 @media 的查询规则
-var defaultResolutions = [
-	'only screen and (-o-min-device-pixel-ratio: 3/2)',
+// 2x
+var resolutions2x = [
 	'only screen and (-webkit-min-device-pixel-ratio: 2)',
 	'only screen and (min--moz-device-pixel-ratio: 2)',
-	'only screen and (-webkit-min-device-pixel-ratio: 2.5)',
-	'only screen and (min-resolution: 240dpi)'
+	'only screen and (-o-min-device-pixel-ratio: 2/1)',
+	'only screen and (min-device-pixel-ratio: 2)',
+	'only screen and (min-resolution: 2dppx)',
+	'only screen and (min-resolution: 192dpi)'
+];
+
+// 3x 仅在移动设备上展示（目前并无桌面端）
+var resolutions3x = [
+	'only screen and (min-device-width: 414px) and (-webkit-min-device-pixel-ratio: 3)',
+	'only screen and (min-device-width: 414px) and (min-resolution: 3dppx)'
 ];
 
 var GROUP_DELIMITER   = '.';
@@ -89,9 +97,10 @@ function collectImages(css, options) {
 
 		// 从 @lazysprite 获取到目标目录
 		var params = space(atRule.params);
-		var sliceDir = params[0];
-		sliceDir = _.trim(sliceDir, "'\"()");
-		var imageDir = path.resolve(options.imagePath,sliceDir);
+		var sliceDir = getAtRuleValue(params);
+
+		// 获取目录绝对路径
+		var imageDir = path.resolve(options.imagePath, sliceDir);
 
 		// 遍历雪碧图源图片 TODO: 改成异步方式
 		var files = fs.readdirSync(imageDir);
@@ -167,38 +176,66 @@ function setTokens(images, options, css) {
 
 		css.walkAtRules("lazysprite", function (atRule) {
 
+			// 从 @lazysprite 获取到目标目录
+			var params = space(atRule.params);
+			var sliceDir = getAtRuleValue(params);
+			var sliceDirname = sliceDir.split(path.sep).pop();
+
 			var atRuleParent = atRule.parent;
-			var params = defaultResolutions.join(', ');
-			var mediaAtRule = postcss.atRule({ name: 'media', params: params });
+			var mediaAtRule2x = postcss.atRule({ name: 'media', params: resolutions2x.join(', ') });
+			var mediaAtRule3x = postcss.atRule({ name: 'media', params: resolutions3x.join(', ') });
+
+			// 标记位
+			var has2x = false;
+			var has3x = false;
 
 			// 遍历信息并生成相应的样式
 			_.forEach(images, function (image, index) {
-				image.token = postcss.comment({
-					text: image.path,
-					raws: {
-						before: ' ',
-						// before: '\n    ', // 设置这个就能控制decl 的缩进，但是效果不好
-						left: '@replace|',
-						right: ''
-					}
-				});
+				// 当且仅当图片目录与目标hash 相等
+				if (sliceDirname == image.hash){
+					image.token = postcss.comment({
+						text: image.path,
+						raws: {
+							before: ' ',
+							// before: '\n    ', // 设置这个就能控制decl 的缩进，但是效果不好
+							left: '@replace|',
+							right: ''
+						}
+					});
 
-				// 二倍图
-				if (image.ratio > 1) {
+					// 基础的rule
 					// 增加 source 参数以便source map 能正常工作
-					var retinaRule = postcss.rule({ selector:'.'+ options.nameSpace +image.selector, source: atRule.source });
-					retinaRule.append(image.token);
-					mediaAtRule.append(retinaRule);
-				} else {
-					 // 一倍图
 					var singleRule = postcss.rule({ selector:'.'+ options.nameSpace +image.selector, source: atRule.source });
 					singleRule.append(image.token);
-					atRuleParent.append(singleRule);
+
+					switch (image.ratio){
+						// 1x
+						case 1:
+							atRuleParent.append(singleRule);
+							break;
+						// 2x
+						case 2:
+							mediaAtRule2x.append(singleRule);
+							has2x = true;
+							break;
+						// 3x
+						case 3:
+							mediaAtRule3x.append(singleRule);
+							has3x = true;
+					}
 				}
 			});
 
-			// 二倍图样式放到最后
-			atRuleParent.append(mediaAtRule);
+			// 2、3 倍图样式放到最后
+			if (has2x){
+				atRuleParent.append(mediaAtRule2x);
+				has2x = false;
+			}
+			if (has3x){
+				atRuleParent.append(mediaAtRule3x);
+				has3x = false;
+			}
+
 			// 删除 @lazysprite
 			atRule.remove();
 		});
@@ -540,7 +577,8 @@ function log() {
  * fix the string for path resolve.
  *
  */
-function cleanupRemoteFile(value) {
-	value = trim(value, "'\"()");
+function getAtRuleValue(params) {
+	var value = params[0];
+	value = _.trim(value, "'\"()");
 	return value;
 }

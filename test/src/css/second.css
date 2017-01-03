@@ -14,7 +14,7 @@
 	font-weight: bold;
 }
 
-/* It's good to test the source map of this rule and others. */
+/* It's necessary to test the source map of this rule and others. */
 @lazysprite "center";
 
 h2{
