@@ -40,29 +40,29 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 
 ```CSS
 /* ./dist/css/index.css */
-.icon-doc {
-    background-image: url(../sprites/sprites-filetype.png);
+.filetype__icon-doc {
+    background-image: url(../sprites/filetype.png);
     background-position: 0 0;
     width: 80px;
     height: 80px;
 }
 
-.icon-pdf {
-    background-image: url(../sprites/sprites-filetype.png);
+.filetype__icon-pdf {
+    background-image: url(../sprites/filetype.png);
     background-position: -90px 0;
     width: 80px;
     height: 80px;
 }
 
 @media only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-webkit-min-device-pixel-ratio: 2.5), only screen and (min-resolution: 240dpi) {
-    .icon-doc {
-        background-image: url(../sprites/sprites-filetype@2x.png);
+    .filetype__icon-doc {
+        background-image: url(../sprites/filetype@2x.png);
         background-position: 0 0;
         background-size: 170px 170px;
     }
 
-    .icon-pdf {
-        background-image: url(../sprites/sprites-filetype@2x.png);
+    .filetype__icon-pdf {
+        background-image: url(../sprites/filetype@2x.png);
         background-position: -90px 0;
         background-size: 170px 170px;
     }

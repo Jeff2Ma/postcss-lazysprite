@@ -115,12 +115,12 @@ function collectImages(css, options) {
 			// 获取到最后一个数组 .pop
 			image.hash = imageDir.split(path.sep).pop();
 			image.groups = [image.hash];
-			image.selector = image.url.split('.')[0];
+			image.selector = image.hash + '__icon-' + image.url.split('.')[0];
 
 			// retina 图片兼容
 			if (isRetinaImage(image.url)) {
 				image.ratio  = getRetinaRatio(image.url);
-				image.selector = image.url.split('@')[0];
+				image.selector = image.hash + '__icon-' + image.url.split('@')[0];
 			}
 
 			// 获取到图片绝对路径
