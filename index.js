@@ -24,12 +24,12 @@ var resolutions2x = [
 
 // 3x 仅在移动设备上展示（目前并无桌面端）
 var resolutions3x = [
-	'only screen and (min-device-width: 414px) and (-webkit-min-device-pixel-ratio: 3)',
-	'only screen and (min-device-width: 414px) and (min-resolution: 3dppx)'
+	'only screen and (-webkit-min-device-pixel-ratio: 3)',
+	'only screen and (min-resolution: 3dppx)'
 ];
 
-var GROUP_DELIMITER   = '.';
-var GROUP_MASK        = '*';
+var GROUP_DELIMITER = '.';
+var GROUP_MASK = '*';
 
 // cache objects;
 var cache = {};
@@ -64,18 +64,18 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		// if file path
 		return Q
 		// 准备工作
-		.all([collectImages(css, options), options])
-		.spread(applyGroupBy)
-		.spread(function (images, options) {
-			return setTokens(images, options, css);
-		})
-		// 合成雪碧图及生成样式
-		.spread(runSpriteSmith)
-		.spread(saveSprites)
-		.spread(mapSpritesProperties)
-		.spread(function (images, options, sprites) {
-			return updateReferences(images, options, sprites, css);
-		});
+			.all([collectImages(css, options), options])
+			.spread(applyGroupBy)
+			.spread(function (images, options) {
+				return setTokens(images, options, css);
+			})
+			// 合成雪碧图及生成样式
+			.spread(runSpriteSmith)
+			.spread(saveSprites)
+			.spread(mapSpritesProperties)
+			.spread(function (images, options, sprites) {
+				return updateReferences(images, options, sprites, css);
+			});
 	};
 });
 
@@ -108,7 +108,9 @@ function collectImages(css, options) {
 
 			// 需检测为png 图片
 			var reg = /\.(png|svg)\b/i;
-			if (!reg.test(filename)) {return;}
+			if (!reg.test(filename)) {
+				return null;
+			}
 
 			var image = {
 				path: null,
@@ -128,7 +130,7 @@ function collectImages(css, options) {
 
 			// retina 图片兼容
 			if (isRetinaImage(image.url)) {
-				image.ratio  = getRetinaRatio(image.url);
+				image.ratio = getRetinaRatio(image.url);
 				image.selector = image.hash + '__icon-' + image.url.split('@')[0];
 			}
 
@@ -182,8 +184,8 @@ function setTokens(images, options, css) {
 			var sliceDirname = sliceDir.split(path.sep).pop();
 
 			var atRuleParent = atRule.parent;
-			var mediaAtRule2x = postcss.atRule({ name: 'media', params: resolutions2x.join(', ') });
-			var mediaAtRule3x = postcss.atRule({ name: 'media', params: resolutions3x.join(', ') });
+			var mediaAtRule2x = postcss.atRule({name: 'media', params: resolutions2x.join(', ')});
+			var mediaAtRule3x = postcss.atRule({name: 'media', params: resolutions3x.join(', ')});
 
 			// 标记位
 			var has2x = false;
@@ -192,7 +194,7 @@ function setTokens(images, options, css) {
 			// 遍历信息并生成相应的样式
 			_.forEach(images, function (image, index) {
 				// 当且仅当图片目录与目标hash 相等
-				if (sliceDirname == image.hash){
+				if (sliceDirname == image.hash) {
 					image.token = postcss.comment({
 						text: image.path,
 						raws: {
@@ -205,10 +207,13 @@ function setTokens(images, options, css) {
 
 					// 基础的rule
 					// 增加 source 参数以便source map 能正常工作
-					var singleRule = postcss.rule({ selector:'.'+ options.nameSpace +image.selector, source: atRule.source });
+					var singleRule = postcss.rule({
+						selector: '.' + options.nameSpace + image.selector,
+						source: atRule.source
+					});
 					singleRule.append(image.token);
 
-					switch (image.ratio){
+					switch (image.ratio) {
 						// 1x
 						case 1:
 							atRuleParent.append(singleRule);
@@ -222,18 +227,17 @@ function setTokens(images, options, css) {
 						case 3:
 							mediaAtRule3x.append(singleRule);
 							has3x = true;
+							break;
 					}
 				}
 			});
 
 			// 2、3 倍图样式放到最后
-			if (has2x){
+			if (has2x) {
 				atRuleParent.append(mediaAtRule2x);
-				has2x = false;
 			}
-			if (has3x){
+			if (has3x) {
 				atRuleParent.append(mediaAtRule3x);
-				has3x = false;
 			}
 
 			// 删除 @lazysprite
@@ -305,7 +309,7 @@ function runSpriteSmith(images, options) {
 						temp = temp.split(GROUP_DELIMITER);
 						temp.shift();
 
-					  	// Append info about sprite group
+						// Append info about sprite group
 						result.groups = temp.map(mask(false));
 
 						// cache - clean old
@@ -370,7 +374,8 @@ function saveSprites(images, options, sprites) {
 
 		Q.all(all)
 			.then(function (sprites) {
-				resolve([images, options, sprites]); })
+				resolve([images, options, sprites]);
+			})
 			.catch(function (err) {
 				if (err) {
 					reject(err);
@@ -389,7 +394,7 @@ function mapSpritesProperties(images, options, sprites) {
 		sprites = _.map(sprites, function (sprite) {
 			return _.map(sprite.coordinates, function (coordinates, imagePath) {
 
-				return _.merge(_.find(images, { path: imagePath }), {
+				return _.merge(_.find(images, {path: imagePath}), {
 					coordinates: coordinates,
 					spritePath: sprite.path,
 					properties: sprite.properties
@@ -414,7 +419,7 @@ function updateReferences(images, options, sprites, css) {
 			if (isToken(comment)) {
 
 				// 通过匹配注释中的路径找到目标的 Rule
-				image = _.find(images, { path: comment.text });
+				image = _.find(images, {path: comment.text});
 
 				if (image) {
 					// Generate correct ref to the sprite
@@ -478,7 +483,7 @@ function makeSpritePath(options, groups) {
 }
 
 function mask(toggle) {
-	var input  = new RegExp('[' + (toggle ? GROUP_DELIMITER : GROUP_MASK) + ']', 'gi');
+	var input = new RegExp('[' + (toggle ? GROUP_DELIMITER : GROUP_MASK) + ']', 'gi');
 	var output = toggle ? GROUP_MASK : GROUP_DELIMITER;
 	return function (value) {
 		return value.replace(input, output);
@@ -510,7 +515,7 @@ function isToken(comment) {
  */
 function getBackgroundImageUrl(image) {
 	var template = _.template('url(<%= image.spriteRef %>)');
-	return template({ image: image });
+	return template({image: image});
 }
 
 /**
@@ -522,7 +527,7 @@ function getBackgroundPosition(image) {
 	var y = -1 * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
 	var template = _.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
 
-	return template({ x: x, y: y });
+	return template({x: x, y: y});
 }
 
 /**
@@ -534,7 +539,7 @@ function getBackgroundSize(image) {
 	var y = image.properties.height / image.ratio;
 	var template = _.template('<%= x %>px <%= y %>px');
 
-	return template({ x: x, y: y });
+	return template({x: x, y: y});
 }
 
 /**
@@ -550,7 +555,7 @@ function isRetinaImage(url) {
  */
 function getRetinaRatio(url) {
 	var matches = /@(\d)x\.[a-z]{3,4}$/gi.exec(url.split('#')[0]);
-	var ratio   = _.parseInt(matches[1]);
+	var ratio = _.parseInt(matches[1]);
 	return ratio;
 }
 
