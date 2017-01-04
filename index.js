@@ -62,9 +62,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 
 	return function (css) {
 		// if file path
-		return Q
-		// 准备工作
-			.all([collectImages(css, options), options])
+		return collectImages(css, options) // 等同于 Q.all([images, options])
 			.spread(applyGroupBy)
 			.spread(function (images, options) {
 				return setTokens(images, options, css);
@@ -84,7 +82,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
  *
  */
 function collectImages(css, options) {
-	var images = [];
+
 	// TODO: 需要修正下 stylesheetPath 的处理
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
@@ -92,55 +90,27 @@ function collectImages(css, options) {
 		throw 'Stylesheets path is undefined, please use option stylesheetPath!';
 	}
 
-	// 查找到含有 @lazysprite 的样式
-	css.walkAtRules("lazysprite", function (atRule) {
+	// UPDATE: 1.4 改成 promise 的方式
+	return Q.promise(function (resolve) {
+		// 查找到含有 @lazysprite 的样式
+		css.walkAtRules("lazysprite", function (atRule) {
+			// 从 @lazysprite 获取到目标目录
+			var params = space(atRule.params);
+			var sliceDir = getAtRuleValue(params);
 
-		// 从 @lazysprite 获取到目标目录
-		var params = space(atRule.params);
-		var sliceDir = getAtRuleValue(params);
+			// 获取目录绝对路径
+			var imageDir = path.resolve(options.imagePath, sliceDir);
 
-		// 获取目录绝对路径
-		var imageDir = path.resolve(options.imagePath, sliceDir);
-
-		// 遍历雪碧图源图片 TODO: 改成异步方式
-		var files = fs.readdirSync(imageDir);
-		files.forEach(function (filename) {
-
-			// 需检测为png 图片
-			var reg = /\.(png|svg)\b/i;
-			if (!reg.test(filename)) {
-				return null;
-			}
-
-			var image = {
-				path: null,
-				url: null,
-				stylesheetPath: stylesheetPath,
-				ratio: 1,
-				groups: [],
-				token: ''
-			};
-			image.url = filename;
-
-			// 获取到所在目录作为合成后的图片名称
-			// 获取到最后一个数组 .pop
-			image.hash = imageDir.split(path.sep).pop();
-			image.groups = [image.hash];
-			image.selector = image.hash + '__icon-' + image.url.split('.')[0];
-
-			// retina 图片兼容
-			if (isRetinaImage(image.url)) {
-				image.ratio = getRetinaRatio(image.url);
-				image.selector = image.hash + '__icon-' + image.url.split('@')[0];
-			}
-
-			// 获取到图片绝对路径
-			image.path = path.resolve(imageDir, filename);
-			images.push(image);
+			// 获取到图片目录
+			getImgList(imageDir, stylesheetPath).then(function (images) {
+				imgages = _.uniqWith(images, _.isEqual);
+				resolve(imgages);
+			})
 		});
-
+	}).then(function (images) {
+		// 必须返回 images, options 以后面调用
+		return [images, options]
 	});
-	return _.uniqWith(images, _.isEqual);
 }
 
 /**
@@ -148,6 +118,7 @@ function collectImages(css, options) {
  *
  */
 function applyGroupBy(images, options) {
+
 	return Q.Promise(function (resolve, reject) {
 		async.reduce(options.groupBy, images, function (images, group, next) {
 			async.map(images, function (image, done) {
@@ -586,4 +557,52 @@ function getAtRuleValue(params) {
 	var value = params[0];
 	value = _.trim(value, "'\"()");
 	return value;
+}
+
+
+/**
+ * get the images from the special finder.
+ *
+ */
+function getImgList(imageDir, stylesheetPath) {
+	var fsReaddir = Q.denodeify(fs.readdir);
+	return fsReaddir(imageDir)
+		.then(function (files) {
+			var promises = files.filter(function (filename) {
+				// 需检测为png 图片
+				var reg = /\.(png|svg)\b/i;
+				return reg.test(filename);
+			}).map(function (filename) {
+				return Q.Promise(function (resolve, reject) {
+					var image = {
+						path: null,
+						url: null,
+						stylesheetPath: stylesheetPath,
+						ratio: 1,
+						groups: [],
+						token: ''
+					};
+					image.url = filename;
+
+					// log(filename);
+
+					// 获取到所在目录作为合成后的图片名称
+					// 获取到最后一个数组 .pop
+					image.hash = imageDir.split(path.sep).pop();
+					image.groups = [image.hash];
+					image.selector = image.hash + '__icon-' + image.url.split('.')[0];
+
+					// retina 图片兼容
+					if (isRetinaImage(image.url)) {
+						image.ratio = getRetinaRatio(image.url);
+						image.selector = image.hash + '__icon-' + image.url.split('@')[0];
+					}
+
+					// 获取到图片绝对路径
+					image.path = path.resolve(imageDir, filename);
+					resolve(image);
+				})
+			});
+			return Q.all(promises);
+		})
 }
