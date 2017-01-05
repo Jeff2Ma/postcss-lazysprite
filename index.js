@@ -9,6 +9,8 @@ var mkdirp = require('mkdirp');
 var md5 = require('md5');
 var gutil = require('gulp-util');
 
+var bPromise = require('bluebird');
+
 var space = postcss.list.space;
 
 // 构建 @media 的查询规则
@@ -84,6 +86,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
  *
  */
 function collectImages(css, options) {
+	return Q.promise(function (resolve, reject) {
 	var images = [];
 	// TODO: 需要修正下 stylesheetPath 的处理
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
@@ -102,45 +105,76 @@ function collectImages(css, options) {
 		// 获取目录绝对路径
 		var imageDir = path.resolve(options.imagePath, sliceDir);
 
-		// 遍历雪碧图源图片 TODO: 改成异步方式
-		var files = fs.readdirSync(imageDir);
-		files.forEach(function (filename) {
+		// fs.readdir(imageDir, function(err,files){
+		// 	if(err){
+		// 		console.log(err);
+		// 	}
+		// 	console.log(files);
+		// });
 
-			// 需检测为png 图片
-			var reg = /\.(png|svg)\b/i;
-			if (!reg.test(filename)) {
-				return null;
-			}
+		// 该种promise 只能得到第一次的resolve 的结果，所以
+		// https://cnodejs.org/topic/58370414ba57ffba06c2494b
+		// https://cnodejs.org/topic/54ae4b73ce87bace2444ccf7
+		var bloglistP= getImgList(imageDir);
+		bloglistP.then(function(fileslist){
 
-			var image = {
-				path: null,
-				url: null,
-				stylesheetPath: stylesheetPath,
-				ratio: 1,
-				groups: [],
-				token: ''
-			};
-			image.url = filename;
+			log(fileslist.length)
+			//这里就可以用 blogList
+			_.forEach(fileslist, function (filename, index) {
 
-			// 获取到所在目录作为合成后的图片名称
-			// 获取到最后一个数组 .pop
-			image.hash = imageDir.split(path.sep).pop();
-			image.groups = [image.hash];
-			image.selector = image.hash + '__icon-' + image.url.split('.')[0];
+				// log(filename)
 
-			// retina 图片兼容
-			if (isRetinaImage(image.url)) {
-				image.ratio = getRetinaRatio(image.url);
-				image.selector = image.hash + '__icon-' + image.url.split('@')[0];
-			}
+				// 需检测为png 图片
+				var reg = /\.(png|svg)\b/i;
+				if (!reg.test(filename)) {
+					return null;
+				}
 
-			// 获取到图片绝对路径
-			image.path = path.resolve(imageDir, filename);
-			images.push(image);
+				var image = {
+					path: null,
+					url: null,
+					stylesheetPath: stylesheetPath,
+					ratio: 1,
+					groups: [],
+					token: ''
+				};
+				image.url = filename;
+
+				// 获取到所在目录作为合成后的图片名称
+				// 获取到最后一个数组 .pop
+				image.hash = imageDir.split(path.sep).pop();
+				image.groups = [image.hash];
+				image.selector = image.hash + '__icon-' + image.url.split('.')[0];
+
+				// retina 图片兼容
+				if (isRetinaImage(image.url)) {
+					image.ratio = getRetinaRatio(image.url);
+					image.selector = image.hash + '__icon-' + image.url.split('@')[0];
+				}
+
+				// 获取到图片绝对路径
+				image.path = path.resolve(imageDir, filename);
+				images.push(image);
+			});
+			images = _.uniqWith(images, _.isEqual);
+			resolve(images);
 		});
 
+
+		// 遍历雪碧图源图片 TODO: 改成异步方式
+		// var fileslist = fs.readdir(imageDir, function(err,files){
+		// 	if(err){
+		// 		console.log(err);
+		// 	}
+		// 	console.log(files);
+		// 	return files;
+		// });
+
+
+
 	});
-	return _.uniqWith(images, _.isEqual);
+	});
+	// return _.uniqWith(images, _.isEqual);
 }
 
 /**
@@ -587,3 +621,30 @@ function getAtRuleValue(params) {
 	value = _.trim(value, "'\"()");
 	return value;
 }
+
+
+// 第二种写法，Promise
+function getImgList(imgDir) {
+	return new Promise(function(resolve,reject){
+		fs.readdir(imgDir, function (err, files) {
+			if(err) reject(err);
+			// var blogList = [];
+			// if (files && files.length) {
+			// 	files.forEach(function (filename) {
+			// 		//split file name and generate url...
+			// 		//...
+			// 		//create a blogItem { title: blogTitle, url: blogUrl }
+			// 		blogList.push(blogItem);
+			// 	});
+			// }
+			resolve(files);
+		});
+	})
+}
+
+// 使用方法
+
+// var bloglistP= getImgList("/");
+// bloglistP.then(function(blogList){
+// 	//这里就可以用 blogList
+// })

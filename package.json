@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "async": "^2.1.4",
+    "bluebird": "^3.4.7",
     "gulp-util": "^3.0.8",
     "lodash": "^4.0.0",
     "md5": "^2.2.1",
