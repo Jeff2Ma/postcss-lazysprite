@@ -157,7 +157,6 @@ function collectImages(css, options) {
  * 分组
  *
  */
-
 function applyGroupBy(images, options) {
 	return new Promise(function (resolve, reject) {
 		async.reduce(options.groupBy, images, function (images, group, next) {
