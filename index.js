@@ -2,7 +2,6 @@ var path = require('path');
 var fs = require('fs');
 var postcss = require('postcss');
 var _ = require('lodash');
-var Q = require('q');
 var async = require('async');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
@@ -10,6 +9,10 @@ var md5 = require('md5');
 var gutil = require('gulp-util');
 
 var space = postcss.list.space;
+
+var Promise = require('bluebird');
+
+Promise.promisifyAll(fs);
 
 // 构建 @media 的查询规则
 // 2x
@@ -62,17 +65,22 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 
 	return function (css) {
 		// if file path
-		return Q
-		// 准备工作
-			.all([collectImages(css, options), options])
-			.spread(applyGroupBy)
+		return collectImages(css, options)
+			.spread(function (images, options) {
+				return applyGroupBy(images, options);
+			})
 			.spread(function (images, options) {
 				return setTokens(images, options, css);
 			})
-			// 合成雪碧图及生成样式
-			.spread(runSpriteSmith)
-			.spread(saveSprites)
-			.spread(mapSpritesProperties)
+			.spread(function (images, options) {
+				return runSpriteSmith(images, options);
+			})
+			.spread(function (images, options, sprites) {
+				return saveSprites(images, options, sprites);
+			})
+			.spread(function (images, options, sprites) {
+				return mapSpritesProperties(images, options, sprites);
+			})
 			.spread(function (images, options, sprites) {
 				return updateReferences(images, options, sprites, css);
 			});
@@ -140,7 +148,8 @@ function collectImages(css, options) {
 		});
 
 	});
-	return images;
+	// return images;
+	return Promise.resolve([images, options]);
 	// return _.uniqWith(images, _.isEqual);
 }
 
@@ -148,11 +157,12 @@ function collectImages(css, options) {
  * 分组
  *
  */
+
 function applyGroupBy(images, options) {
-	return Q.Promise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		async.reduce(options.groupBy, images, function (images, group, next) {
 			async.map(images, function (image, done) {
-				new Q(group(image))
+				new Promise.resolve(group(image))
 					.then(function (group) {
 						if (group) {
 							image.groups.push(group);
@@ -170,12 +180,32 @@ function applyGroupBy(images, options) {
 	});
 }
 
+/*
+function applyGroupBy(images, options) {
+	return Promise.reduce(options.groupBy, images, function (images, groupFn) {
+		Promise.map(images, function (image) {
+			return groupFn(image)
+				.then(function (group) {
+					if (group) {
+						image.groups.push(group);
+					}
+					return image;
+				})
+			// .catch();
+		});
+	}, images).then(function (images) {
+			[opts, images];
+		}
+	);
+}*/
+
+
 /**
  * 生成CSS Rules 并插入必要的信息
  *
  */
 function setTokens(images, options, css) {
-	return Q.Promise(function (resolve) {
+	return new Promise(function (resolve) {
 
 		css.walkAtRules("lazysprite", function (atRule) {
 
@@ -253,7 +283,7 @@ function setTokens(images, options, css) {
  *
  */
 function runSpriteSmith(images, options) {
-	return Q.Promise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		var all = _
 			.chain(images)
 			.groupBy(function (image) {
@@ -297,7 +327,7 @@ function runSpriteSmith(images, options) {
 
 				// get data from cache (avoid spritesmith)
 				if (cache[checkstring]) {
-					var deferred = Q.defer();
+					var deferred = Promise.pending();
 					var results = cache[checkstring];
 
 					results.isFromCache = true;
@@ -305,7 +335,7 @@ function runSpriteSmith(images, options) {
 					return deferred.promise;
 				}
 
-				return Q.nfcall(spritesmith, config)
+				return Promise.promisify(spritesmith)(config)
 					.then(function (result) {
 						temp = temp.split(GROUP_DELIMITER);
 						temp.shift();
@@ -328,7 +358,7 @@ function runSpriteSmith(images, options) {
 			})
 			.value();
 
-		Q.all(all)
+		Promise.all(all)
 			.then(function (results) {
 				resolve([images, options, results]);
 			})
@@ -345,7 +375,7 @@ function runSpriteSmith(images, options) {
  *
  */
 function saveSprites(images, options, sprites) {
-	return Q.Promise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 
 		if (!fs.existsSync(options.spritePath)) {
 			mkdirp.sync(options.spritePath);
@@ -358,14 +388,14 @@ function saveSprites(images, options, sprites) {
 
 				// if this file is up to date
 				if (sprite.isFromCache) {
-					var deferred = Q.defer();
+					var deferred = Promise.pending();
 					log('Lazysprite:', gutil.colors.green(sprite.path), 'unchanged.');
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
 
 				// save new file version
-				return Q.nfcall(fs.writeFile, sprite.path, new Buffer(sprite.image, 'binary'))
+				return Promise.try(fs.writeFile, sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
 						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'generated.');
 						return sprite;
@@ -373,7 +403,7 @@ function saveSprites(images, options, sprites) {
 			})
 			.value();
 
-		Q.all(all)
+		Promise.all(all)
 			.then(function (sprites) {
 				resolve([images, options, sprites]);
 			})
@@ -390,7 +420,7 @@ function saveSprites(images, options, sprites) {
  *
  */
 function mapSpritesProperties(images, options, sprites) {
-	return Q.Promise(function (resolve) {
+	return new Promise(function (resolve) {
 
 		sprites = _.map(sprites, function (sprite) {
 			return _.map(sprite.coordinates, function (coordinates, imagePath) {
@@ -412,7 +442,7 @@ function mapSpritesProperties(images, options, sprites) {
  *
  */
 function updateReferences(images, options, sprites, css) {
-	return Q.Promise(function (resolve) {
+	return new Promise(function (resolve) {
 		css.walkComments(function (comment) {
 			var rule, image, backgroundImage, backgroundPosition, backgroundSize;
 
