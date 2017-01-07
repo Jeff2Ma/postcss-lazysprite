@@ -140,7 +140,8 @@ function collectImages(css, options) {
 		});
 
 	});
-	return _.uniqWith(images, _.isEqual);
+	return images;
+	// return _.uniqWith(images, _.isEqual);
 }
 
 /**
