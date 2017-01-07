@@ -50,18 +50,3 @@ gulp.task('watch', function () {
 	// gulp.watch(watchFiles, ['css', 'test', 'lint']);
 	gulp.watch(watchFiles, ['css']);
 });
-
-gulp.task('gulp-autoreload', function() {
-	// Store current process if any
-	var p;
-	gulp.watch(['gulpfile.js','index.js'], spawnChildren);
-	// Comment the line below if you start your server by yourslef anywhere else
-	spawnChildren();
-
-	function spawnChildren(e) {
-		if(p) {
-			p.kill();
-		}
-		p = spawn('gulp', ['css'], {stdio: 'inherit'});
-	}
-});

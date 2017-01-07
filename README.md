@@ -15,28 +15,11 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 
 ## Function
 
-### Files tree
-
-```
-.
-├── gulpfile.js
-├── dist
-└── src
-    ├── css
-    │   └── index.css
-    ├── html
-    │   └── index.html
-    └── slice
-        └── file
-            ├── doc.png
-            ├── doc@2x.png
-            ├── pdf.png
-            └── pdf@2x.png
-```
 
 ### Input
 ```CSS
 /* ./src/css/index.css */
+
 @lazysprite "./file";
 ```
 
@@ -72,6 +55,26 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
     }
 }
 ```
+
+### File tree
+
+```
+.
+├── gulpfile.js
+├── dist
+└── src
+    ├── css
+    │   └── index.css
+    ├── html
+    │   └── index.html
+    └── slice
+        └── file
+            ├── doc.png
+            ├── doc@2x.png
+            ├── pdf.png
+            └── pdf@2x.png
+```
+
 
 ## Features
 
@@ -117,7 +120,7 @@ gulp.task('css', function () {
 
 #### imagePath
 
-> Relative path to the folder that sprite images are stored. For resolving absolute images
+> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the bash path of he value of `@lazysprite`.
 
 - Default: null
 - Required: `true`
@@ -161,5 +164,3 @@ $ cd postcss-lazysprite
 $ npm i
 $ gulp
 ```
-
-
