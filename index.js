@@ -370,7 +370,7 @@ function saveSprites(images, options, sprites) {
 				}
 
 				// save new file version
-				return Promise.try(fs.writeFile, sprite.path, new Buffer(sprite.image, 'binary'))
+				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
 						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'generated.');
 						return sprite;
