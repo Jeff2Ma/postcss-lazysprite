@@ -7,6 +7,8 @@
 [![lic-image](https://img.shields.io/npm/l/postcss-lazysprite.svg)](https://github.com/Jeff2Ma/postcss-lazysprite/blob/master/LICENSE.md)
 [![change-log](https://img.shields.io/badge/changelog-md-blue.svg)](https://github.com/Jeff2Ma/postcss-lazysprite/blob/master/CHANGELOG.md)
 
+> Note: `Q-promise` branch is work well with Q libary. Since 8th Jan migrate to bluebird.
+
 A [PostCSS](https://github.com/postcss/postcss) plugin that generates sprites form the directory of images automatically.
 
 Another lazy way to generate sprites and proper CSS with retina support. Feel free to use it :)
