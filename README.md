@@ -119,7 +119,7 @@ gulp.task('css', function () {
 
 #### imagePath
 
-> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the bash path to the value of `@lazysprite`.
+> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the base/* relative to stylesheets/ according to `from` option above */ path to the value of `@lazysprite`.
 
 - Default: null
 - Required: `true`

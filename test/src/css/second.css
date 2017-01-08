@@ -4,21 +4,22 @@
 * Test the source map.
 */
 
-.demo{
+.demo {
 	margin-top: 40px;
 	text-align: center;
 	font-size: 18px;
 }
 
-.demo a{
+.demo a {
 	font-weight: bold;
 }
 
 /* It's necessary to test the source map of this rule and others. */
 @lazysprite './center';
 
-h2{
+h2 {
 	font-size: 16px;
 }
 
+/* single quotes (') and double quotes (") are both support*/
 @lazysprite 'logo';

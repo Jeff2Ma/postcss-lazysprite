@@ -21,7 +21,7 @@ var resolutions2x = [
 	'only screen and (min-resolution: 192dpi)'
 ];
 
-// @media rule for @3x resolutions. currently only work some mobile devices
+// @media rule for @3x resolutions. currently only work in some mobile devices
 var resolutions3x = [
 	'only screen and (-webkit-min-device-pixel-ratio: 3)',
 	'only screen and (min-resolution: 3dppx)'
@@ -115,25 +115,26 @@ function extractImages(css, options) {
 			}
 
 			var image = {
-				path: null,
-				url: null,
+				path: null, // Absolute path
+				name: null, // Filename
 				stylesheetPath: stylesheetPath,
 				ratio: 1,
 				groups: [],
 				token: ''
 			};
-			image.url = filename;
+
+			image.name = filename;
 
 			// Set the directory name as sprite file name,
 			// .pop() to get the last element in array
-			image.hash = imageDir.split(path.sep).pop();
-			image.groups = [image.hash];
-			image.selector = image.hash + '__icon-' + image.url.split('.')[0];
+			image.dir = imageDir.split(path.sep).pop();
+			image.groups = [image.dir];
+			image.selector = image.dir + '__icon-' + image.name.split('.')[0];
 
 			// For retina
-			if (isRetinaImage(image.url)) {
-				image.ratio = getRetinaRatio(image.url);
-				image.selector = image.hash + '__icon-' + image.url.split('@')[0];
+			if (isRetinaImage(image.name)) {
+				image.ratio = getRetinaRatio(image.name);
+				image.selector = image.dir + '__icon-' + image.name.split('@')[0];
 			}
 
 			// Get absolute path of image
@@ -192,8 +193,8 @@ function setTokens(images, options, css) {
 
 			// Foreach every image object
 			_.forEach(images, function (image) {
-				// Only work when equal directory name
-				if (sliceDirname === image.hash) {
+				// Only work when equal to directory name
+				if (sliceDirname === image.dir) {
 					image.token = postcss.comment({
 						text: image.path,
 						raws: {
@@ -204,7 +205,7 @@ function setTokens(images, options, css) {
 						}
 					});
 
-					// add `source` argumentfor source map create.
+					// add `source` argument for source map create.
 					var singleRule = postcss.rule({
 						selector: '.' + options.nameSpace + image.selector,
 						source: atRule.source
