@@ -2,20 +2,16 @@ var path = require('path');
 var fs = require('fs');
 var postcss = require('postcss');
 var _ = require('lodash');
-var async = require('async');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
 var md5 = require('md5');
 var gutil = require('gulp-util');
-
-var space = postcss.list.space;
-
 var Promise = require('bluebird');
 
+var space = postcss.list.space;
 Promise.promisifyAll(fs);
 
-// 构建 @media 的查询规则
-// 2x
+// @media rule for @2x resolutions
 var resolutions2x = [
 	'only screen and (-webkit-min-device-pixel-ratio: 2)',
 	'only screen and (min--moz-device-pixel-ratio: 2)',
@@ -25,7 +21,7 @@ var resolutions2x = [
 	'only screen and (min-resolution: 192dpi)'
 ];
 
-// 3x 仅在移动设备上展示（目前并无桌面端）
+// @media rule for @3x resolutions. currently only work some mobile devices
 var resolutions3x = [
 	'only screen and (-webkit-min-device-pixel-ratio: 3)',
 	'only screen and (min-resolution: 3dppx)'
@@ -34,23 +30,23 @@ var resolutions3x = [
 var GROUP_DELIMITER = '.';
 var GROUP_MASK = '*';
 
-// cache objects;
+// cache objects
 var cache = {};
 var cacheIndex = {};
 
-/**
- * main function
- */
+/* --------------------------------------------------------------
+ # Main functions
+ -------------------------------------------------------------- */
 module.exports = postcss.plugin('postcss-lazysprite', function (options) {
-	// options
+	// default Options
 	options = options || {};
 	options.groupBy = options.groupBy || [];
 	options.padding = options.padding ? options.padding : 10;
 
-	// 命名空间
+	// Namespace for CSS selectors
 	options.nameSpace = options.nameSpace || '';
 
-	// 其它路径
+	// Other paths
 	options.imagePath = path.resolve(process.cwd(), options.imagePath || '');
 	options.spritePath = path.resolve(process.cwd(), options.spritePath || '');
 
@@ -62,8 +58,9 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		return null;
 	});
 
+	// Processer
 	return function (css) {
-		return collectImages(css, options)
+		return extractImages(css, options)
 			.spread(function (images, options) {
 				return applyGroupBy(images, options);
 			})
@@ -86,33 +83,32 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 });
 
 /**
- * 从CSS 规则中获取到目标图片
- *
+ * Walks the @lazysprite atrule and get the value to extract the target images.
+ * @param  {Node}   css
+ * @param  {Object} options
+ * @return {Promise}
  */
-function collectImages(css, options) {
+function extractImages(css, options) {
 	var images = [];
-	// TODO: 需要修正下 stylesheetPath 的处理
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
-		throw 'Stylesheets path is undefined, please use option stylesheetPath!';
+		log('Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!'));
 	}
 
-	// 查找到含有 @lazysprite 的样式
-	css.walkAtRules("lazysprite", function (atRule) {
-
-		// 从 @lazysprite 获取到目标目录
+	// Find @lazysprite string from css
+	css.walkAtRules('lazysprite', function (atRule) {
+		// Get the directory of images from atRule value
 		var params = space(atRule.params);
 		var sliceDir = getAtRuleValue(params);
 
-		// 获取目录绝对路径
+		// Get absolute path of directory.
 		var imageDir = path.resolve(options.imagePath, sliceDir);
 
-		// 遍历雪碧图源图片 TODO: 改成异步方式
+		// Foreach the images and set image object.
 		var files = fs.readdirSync(imageDir);
 		files.forEach(function (filename) {
-
-			// 需检测为png 图片
+			// Have to be png file
 			var reg = /\.(png|svg)\b/i;
 			if (!reg.test(filename)) {
 				return null;
@@ -128,63 +124,60 @@ function collectImages(css, options) {
 			};
 			image.url = filename;
 
-			// 获取到所在目录作为合成后的图片名称
-			// 获取到最后一个数组 .pop
+			// Set the directory name as sprite file name,
+			// .pop() to get the last element in array
 			image.hash = imageDir.split(path.sep).pop();
 			image.groups = [image.hash];
 			image.selector = image.hash + '__icon-' + image.url.split('.')[0];
 
-			// retina 图片兼容
+			// For retina
 			if (isRetinaImage(image.url)) {
 				image.ratio = getRetinaRatio(image.url);
 				image.selector = image.hash + '__icon-' + image.url.split('@')[0];
 			}
 
-			// 获取到图片绝对路径
+			// Get absolute path of image
 			image.path = path.resolve(imageDir, filename);
 			images.push(image);
 		});
-
 	});
-	// return images;
 	return Promise.resolve([images, options]);
-	// return _.uniqWith(images, _.isEqual);
 }
 
 /**
- * 分组
- *
+ * Apply groupBy functions over collection of exported images.
+ * @param  {Object} options
+ * @param  {Array}  images
+ * @return {Promise}
  */
 function applyGroupBy(images, options) {
-	// return new Promise(function (resolve, reject) {
-		return Promise.reduce(options.groupBy, function (images, group) {
-			return Promise.map(images, function (image) {
-				return Promise.resolve(group(image)).then(function (group) {
-					if (group){
-						image.groups.push(group);
-					}
-					return image;
-				}).catch(function (err) {
-					if (err) {
-						reject(err);
-					}
-					return image;
-				});
+	return Promise.reduce(options.groupBy, function (images, group) {
+		return Promise.map(images, function (image) {
+			return Promise.resolve(group(image)).then(function (group) {
+				if (group) {
+					image.groups.push(group);
+				}
+				return image;
+			}).catch(function (image) {
+				return image;
 			});
-		}, images).then(function (images) {
-			return [images, options];
 		});
-	// });
+	}, images).then(function (images) {
+		return [images, options];
+	});
 }
 
 /**
- * 生成CSS Rules 并插入必要的信息
- *
+ * Set the necessary tokens info to the background declarations.
+ * @param  {Node}   css
+ * @param  {Object} options
+ * @param  {Array}  images
+ * @return {Promise}
  */
 function setTokens(images, options, css) {
 	return new Promise(function (resolve) {
-		css.walkAtRules("lazysprite", function (atRule) {
-			// 从 @lazysprite 获取到目标目录
+		css.walkAtRules('lazysprite', function (atRule) {
+			// Get the directory of images from atRule value
 			var params = space(atRule.params);
 			var sliceDir = getAtRuleValue(params);
 			var sliceDirname = sliceDir.split(path.sep).pop();
@@ -193,52 +186,54 @@ function setTokens(images, options, css) {
 			var mediaAtRule2x = postcss.atRule({name: 'media', params: resolutions2x.join(', ')});
 			var mediaAtRule3x = postcss.atRule({name: 'media', params: resolutions3x.join(', ')});
 
-			// 标记位
+			// Tag flag
 			var has2x = false;
 			var has3x = false;
 
-			// 遍历信息并生成相应的样式
-			_.forEach(images, function (image, index) {
-				// 当且仅当图片目录与目标hash 相等
-				if (sliceDirname == image.hash) {
+			// Foreach every image object
+			_.forEach(images, function (image) {
+				// Only work when equal directory name
+				if (sliceDirname === image.hash) {
 					image.token = postcss.comment({
 						text: image.path,
 						raws: {
 							before: ' ',
-							// before: '\n    ', // 设置这个就能控制decl 的缩进，但是效果不好
+							// before: '\n    ', // Use this to control indent but no work well
 							left: '@replace|',
 							right: ''
 						}
 					});
 
-					// 基础的rule
-					// 增加 source 参数以便source map 能正常工作
+					// add `source` argumentfor source map create.
 					var singleRule = postcss.rule({
 						selector: '.' + options.nameSpace + image.selector,
 						source: atRule.source
 					});
+
 					singleRule.append(image.token);
 
 					switch (image.ratio) {
-						// 1x
-						case 1:
-							atRuleParent.append(singleRule);
-							break;
-						// 2x
-						case 2:
-							mediaAtRule2x.append(singleRule);
-							has2x = true;
-							break;
-						// 3x
-						case 3:
-							mediaAtRule3x.append(singleRule);
-							has3x = true;
-							break;
+					// @1x
+					case 1:
+						atRuleParent.append(singleRule);
+						break;
+					// @2x
+					case 2:
+						mediaAtRule2x.append(singleRule);
+						has2x = true;
+						break;
+					// @3x
+					case 3:
+						mediaAtRule3x.append(singleRule);
+						has3x = true;
+						break;
+					default:
+						break;
 					}
 				}
 			});
 
-			// 2、3 倍图样式放到最后
+			// @2x @3x media rule are last.
 			if (has2x) {
 				atRuleParent.append(mediaAtRule2x);
 			}
@@ -246,7 +241,7 @@ function setTokens(images, options, css) {
 				atRuleParent.append(mediaAtRule3x);
 			}
 
-			// 删除 @lazysprite
+			// Remove @lazysprite atRule.
 			atRule.remove();
 		});
 		resolve([images, options]);
@@ -254,8 +249,10 @@ function setTokens(images, options, css) {
 }
 
 /**
- * 通过 SpriteSmith 生成雪碧图
- *
+ * Use spritesmith module to process images.
+ * @param  {Object} options
+ * @param  {Array}  images
+ * @return {Promise}
  */
 function runSpriteSmith(images, options) {
 	return new Promise(function (resolve, reject) {
@@ -275,7 +272,7 @@ function runSpriteSmith(images, options) {
 				});
 				var ratio;
 
-				// Enlarge padding for retina images
+				// Enlarge padding when are retina images
 				if (areAllRetina(images)) {
 					ratio = _
 						.chain(images)
@@ -284,13 +281,13 @@ function runSpriteSmith(images, options) {
 						.value();
 
 					if (ratio.length === 1) {
-						config.padding = config.padding * ratio[0];
+						config.padding *= ratio[0];
 					}
 				}
 
 				var checkstring = [];
 
-				// collect images datechanged
+				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 				_.each(config.src, function (image) {
 					checkstring.push(image + '=' + md5(fs.readFileSync(image).toString()));
@@ -298,9 +295,7 @@ function runSpriteSmith(images, options) {
 
 				checkstring = md5(checkstring.join('&'));
 
-				// log(checkstring);
-
-				// get data from cache (avoid spritesmith)
+				// Get data from cache (avoid spritesmith)
 				if (cache[checkstring]) {
 					var deferred = Promise.pending();
 					var results = cache[checkstring];
@@ -318,13 +313,13 @@ function runSpriteSmith(images, options) {
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
 
-						// cache - clean old
+						// Cache - clean old
 						var oldCheckstring = cacheIndex[config.spriteName];
 						if (oldCheckstring && cache[oldCheckstring]) {
 							delete cache[oldCheckstring];
 						}
 
-						// cache - add brand new data
+						// Cache - add brand new data
 						cacheIndex[config.spriteName] = checkstring;
 						cache[checkstring] = result;
 
@@ -346,12 +341,14 @@ function runSpriteSmith(images, options) {
 }
 
 /**
- * 保存雪碧图
- *
+ * Save the sprites to the target path.
+ * @param  {Object} options
+ * @param  {Array}  images
+ * @param  {Array}  sprites
+ * @return {Promise}
  */
 function saveSprites(images, options, sprites) {
 	return new Promise(function (resolve, reject) {
-
 		if (!fs.existsSync(options.spritePath)) {
 			mkdirp.sync(options.spritePath);
 		}
@@ -361,7 +358,7 @@ function saveSprites(images, options, sprites) {
 			.map(function (sprite) {
 				sprite.path = makeSpritePath(options, sprite.groups);
 
-				// if this file is up to date
+				// If this file is up to date
 				if (sprite.isFromCache) {
 					var deferred = Promise.pending();
 					log('Lazysprite:', gutil.colors.green(sprite.path), 'unchanged.');
@@ -369,7 +366,7 @@ function saveSprites(images, options, sprites) {
 					return deferred.promise;
 				}
 
-				// save new file version
+				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
 						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'generated.');
@@ -391,14 +388,16 @@ function saveSprites(images, options, sprites) {
 }
 
 /**
- * 为每张图片标记位置信息
- *
+ * Map sprites props for every image.
+ * @param  {Object} options
+ * @param  {Array}  images
+ * @param  {Array}  sprites
+ * @return {Promise}
  */
 function mapSpritesProperties(images, options, sprites) {
 	return new Promise(function (resolve) {
 		sprites = _.map(sprites, function (sprite) {
 			return _.map(sprite.coordinates, function (coordinates, imagePath) {
-
 				return _.merge(_.find(images, {path: imagePath}), {
 					coordinates: coordinates,
 					spritePath: sprite.path,
@@ -411,20 +410,21 @@ function mapSpritesProperties(images, options, sprites) {
 }
 
 /**
- * 更新对应的CSS 样式
- *
+ * Updates the CSS references from the token info.
+ * @param  {Node}   css
+ * @param  {Object} options
+ * @param  {Array}  images
+ * @param  {Array}  sprites
+ * @return {Promise}
  */
 function updateReferences(images, options, sprites, css) {
 	return new Promise(function (resolve) {
 		css.walkComments(function (comment) {
 			var rule, image, backgroundImage, backgroundPosition, backgroundSize;
-
 			// Manipulate only token comments
 			if (isToken(comment)) {
-
-				// 通过匹配注释中的路径找到目标的 Rule
+				// Match from the path with the tokens comments
 				image = _.find(images, {path: comment.text});
-
 				if (image) {
 					// Generate correct ref to the sprite
 					image.spriteRef = path.relative(image.stylesheetPath, image.spritePath);
@@ -432,7 +432,7 @@ function updateReferences(images, options, sprites, css) {
 
 					backgroundImage = postcss.decl({
 						prop: 'background-image',
-						value: getBackgroundImageUrl(image),
+						value: getBackgroundImageUrl(image)
 					});
 
 					backgroundPosition = postcss.decl({
@@ -443,10 +443,9 @@ function updateReferences(images, options, sprites, css) {
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
 
-					// Output the dimensions
-					// 仅当在一倍的情况下才输出 width/height CSS
+					// Output the dimensions (only with 1x)
 					rule = backgroundImage.parent;
-					if (options.outputDimensions && image.ratio == 1) {
+					if (options.outputDimensions && image.ratio === 1) {
 						['height', 'width'].forEach(function (prop) {
 							rule.insertAfter(
 								backgroundImage,
@@ -476,16 +475,25 @@ function updateReferences(images, options, sprites, css) {
 	});
 }
 
-/**
- * 设置产生的雪碧图文件名
- *
- */
+/* --------------------------------------------------------------
+ # Helpers
+ -------------------------------------------------------------- */
+
+// Get the value of Atrule and trim to string without quote.
+function getAtRuleValue(params) {
+	var value = params[0];
+	value = _.trim(value, '\'"()');
+	return value;
+}
+
+// Set the sprite file name form groups.
 function makeSpritePath(options, groups) {
 	var base = options.spritePath;
 	var file = path.resolve(base, groups.join('.') + '.png');
 	return file.replace('.@', '@');
 }
 
+// Mask function
 function mask(toggle) {
 	var input = new RegExp('[' + (toggle ? GROUP_DELIMITER : GROUP_MASK) + ']', 'gi');
 	var output = toggle ? GROUP_MASK : GROUP_DELIMITER;
@@ -494,50 +502,26 @@ function mask(toggle) {
 	};
 }
 
-function resolveUrl(image, options) {
-	var results;
-	if (/^\//.test(image.url)) {
-		results = path.resolve(options.imagePath, image.url.replace(/^\//, ''));
-	} else {
-		results = path.resolve(image.stylesheetPath, image.url);
-	}
-	// get rid of get params and hash;
-	return results.split('#')[0].split('?')[0];
-}
-
-/**
- * 正则匹配 @replace 的注释
- *
- */
+// RegExp to match `@replace` comments
 function isToken(comment) {
 	return /@replace/gi.test(comment.toString());
 }
 
-/**
- * Return the value for background-image property.
- *
- */
+// Return the value for background-image property
 function getBackgroundImageUrl(image) {
 	var template = _.template('url(<%= image.spriteRef %>)');
 	return template({image: image});
 }
 
-/**
- * Return the value for background-position property.
- *
- */
+// Return the value for background-position property
 function getBackgroundPosition(image) {
 	var x = -1 * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
 	var y = -1 * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
 	var template = _.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
-
 	return template({x: x, y: y});
 }
 
-/**
- * Return the value for background-size property.
- *
- */
+// Return the value for background-size property.
 function getBackgroundSize(image) {
 	var x = image.properties.width / image.ratio;
 	var y = image.properties.height / image.ratio;
@@ -546,48 +530,27 @@ function getBackgroundSize(image) {
 	return template({x: x, y: y});
 }
 
-/**
- * Check whether the image is retina.
- */
+// Check whether the image is retina
 function isRetinaImage(url) {
 	return /@(\d)x\.[a-z]{3,4}$/gi.test(url.split('#')[0]);
 }
 
-/**
- * Return the retina ratio.
- *
- */
+// Return the value of retina ratio.
 function getRetinaRatio(url) {
 	var matches = /@(\d)x\.[a-z]{3,4}$/gi.exec(url.split('#')[0]);
 	var ratio = _.parseInt(matches[1]);
 	return ratio;
 }
 
-/**
- * Check whether all images are retina. TODO：必须同时处理含有 1x 与2x 的图片
- *
- */
+// Check whether all images are retina. should both with 1x and 2x
 function areAllRetina(images) {
 	return _.every(images, function (image) {
 		return image.ratio > 1;
 	});
 }
 
-/**
- * log with same stylesheet.
- *
- */
+// Log with same stylesheet
 function log() {
 	var data = Array.prototype.slice.call(arguments);
 	gutil.log.apply(false, data);
-}
-
-/**
- * fix the string for path resolve.
- *
- */
-function getAtRuleValue(params) {
-	var value = params[0];
-	value = _.trim(value, "'\"()");
-	return value;
 }

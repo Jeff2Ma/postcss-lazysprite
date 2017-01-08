@@ -15,10 +15,10 @@
 }
 
 /* It's necessary to test the source map of this rule and others. */
-@lazysprite "center";
+@lazysprite './center';
 
 h2{
 	font-size: 16px;
 }
 
-@lazysprite "logo";
+@lazysprite 'logo';

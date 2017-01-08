@@ -119,7 +119,7 @@ gulp.task('css', function () {
 
 #### imagePath
 
-> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the bash path of he value of `@lazysprite`.
+> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the bash path to the value of `@lazysprite`.
 
 - Default: null
 - Required: `true`
@@ -154,6 +154,8 @@ gulp.task('css', function () {
 
 
 ## Contributing
+
+Thanks the inspirations from [postcss-easysprites](https://github.com/glebmachine/postcss-easysprites) plugin.
 
 [Issues](https://github.com/Jeff2Ma/postcss-lazysprite/issues) and [Pull requests](https://github.com/Jeff2Ma/postcss-lazysprite/pulls) are welcome.
 
