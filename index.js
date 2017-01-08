@@ -46,7 +46,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	options = options || {};
 	options.groupBy = options.groupBy || [];
 	options.padding = options.padding ? options.padding : 10;
-	// options.outputDimensions = options.outputDimensions || true;
 
 	// 命名空间
 	options.nameSpace = options.nameSpace || '';
@@ -64,7 +63,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	});
 
 	return function (css) {
-		// if file path
 		return collectImages(css, options)
 			.spread(function (images, options) {
 				return applyGroupBy(images, options);
@@ -158,46 +156,26 @@ function collectImages(css, options) {
  *
  */
 function applyGroupBy(images, options) {
-	return new Promise(function (resolve, reject) {
-		async.reduce(options.groupBy, images, function (images, group, next) {
-			async.map(images, function (image, done) {
-				new Promise.resolve(group(image))
-					.then(function (group) {
-						if (group) {
-							image.groups.push(group);
-						}
-						done(null, image);
-					})
-					.catch(done);
-			}, next);
-		}, function (err, images) {
-			if (err) {
-				return reject(err);
-			}
-			resolve([images, options]);
-		});
-	});
-}
-
-/*
-function applyGroupBy(images, options) {
-	return Promise.reduce(options.groupBy, images, function (images, groupFn) {
-		Promise.map(images, function (image) {
-			return groupFn(image)
-				.then(function (group) {
-					if (group) {
+	// return new Promise(function (resolve, reject) {
+		return Promise.reduce(options.groupBy, function (images, group) {
+			return Promise.map(images, function (image) {
+				return Promise.resolve(group(image)).then(function (group) {
+					if (group){
 						image.groups.push(group);
 					}
 					return image;
-				})
-			// .catch();
+				}).catch(function (err) {
+					if (err) {
+						reject(err);
+					}
+					return image;
+				});
+			});
+		}, images).then(function (images) {
+			return [images, options];
 		});
-	}, images).then(function (images) {
-			[opts, images];
-		}
-	);
-}*/
-
+	// });
+}
 
 /**
  * 生成CSS Rules 并插入必要的信息
@@ -205,9 +183,7 @@ function applyGroupBy(images, options) {
  */
 function setTokens(images, options, css) {
 	return new Promise(function (resolve) {
-
 		css.walkAtRules("lazysprite", function (atRule) {
-
 			// 从 @lazysprite 获取到目标目录
 			var params = space(atRule.params);
 			var sliceDir = getAtRuleValue(params);
@@ -420,7 +396,6 @@ function saveSprites(images, options, sprites) {
  */
 function mapSpritesProperties(images, options, sprites) {
 	return new Promise(function (resolve) {
-
 		sprites = _.map(sprites, function (sprite) {
 			return _.map(sprite.coordinates, function (coordinates, imagePath) {
 
@@ -431,7 +406,6 @@ function mapSpritesProperties(images, options, sprites) {
 				});
 			});
 		});
-
 		resolve([images, options, sprites]);
 	});
 }
