@@ -79,7 +79,7 @@ Another lazy way to generate sprites and proper CSS with retina support. Feel fr
 
 - Simple and easy, just need to put your images to the special folder.
 
-- Retina support (@2x, @3x).
+- Retina support (`@2x`, `@3x`, `_2x`, `_3x` are all available).
 
 - Fully work well with Source Map.
 

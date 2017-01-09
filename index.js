@@ -549,14 +549,18 @@ function getBackgroundSize(image) {
 	return template({x: x, y: y});
 }
 
-// Check whether the image is retina
+// Check whether the image is retina,
+// Both `@2x` and `_2x` are support.
 function isRetinaImage(url) {
-	return /@(\d)x\.[a-z]{3,4}$/gi.test(url);
+	return /[@_](\d)x\.[a-z]{3,4}$/gi.test(url);
 }
 
 // Return the value of retina ratio.
 function getRetinaRatio(url) {
-	var matches = /@(\d)x\.[a-z]{3,4}$/gi.exec(url);
+	var matches = /[@_](\d)x\.[a-z]{3,4}$/gi.exec(url);
+	if (!matches) {
+		return 1;
+	}
 	var ratio = _.parseInt(matches[1]);
 	return ratio;
 }
