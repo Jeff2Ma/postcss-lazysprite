@@ -39,15 +39,23 @@ var cacheIndex = {};
  # Main functions
  -------------------------------------------------------------- */
 module.exports = postcss.plugin('postcss-lazysprite', function (options) {
-	// default Options
+	// Default Options
 	options = options || {};
-	options.groupBy = options.groupBy || [];
-	options.padding = options.padding ? options.padding : 10;
 
-	// Namespace for CSS selectors
-	options.nameSpace = options.nameSpace || '';
+	options = _.merge({
+		groupBy: options.groupBy || [],
+		padding: options.padding ? options.padding : 10,
+		nameSpace: options.nameSpace || '',
+		outputDimensions: options.outputDimensions || true
+	}, options);
 
-	// Other paths
+	// Option `imagePath` is required
+	if (!options.imagePath) {
+		var errMsg = log('Lazysprite:', gutil.colors.red('Option `imagePath` is undefined! Please set it and restart.'));
+		throw errMsg;
+	}
+
+	// Paths
 	options.imagePath = path.resolve(process.cwd(), options.imagePath || '');
 	options.spritePath = path.resolve(process.cwd(), options.spritePath || '');
 
@@ -79,6 +87,10 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 			})
 			.spread(function (images, options, sprites) {
 				return updateReferences(images, options, sprites, css);
+			})
+			.catch(function (err) {
+				err = log('Lazysprite:', gutil.colors.red(err.message));
+				throw err;
 			});
 	};
 });
@@ -363,7 +375,7 @@ function saveSprites(images, options, sprites) {
 				// If this file is up to date
 				if (sprite.isFromCache) {
 					var deferred = Promise.pending();
-					log('Lazysprite:', gutil.colors.green(sprite.path), 'unchanged.');
+					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -371,7 +383,7 @@ function saveSprites(images, options, sprites) {
 				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
-						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'generated.');
+						log('Lazysprite:', gutil.colors.green(sprite.path), 'generated.');
 						return sprite;
 					});
 			})

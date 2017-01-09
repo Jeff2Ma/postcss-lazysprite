@@ -33,8 +33,7 @@ gulp.task('css', function () {
 			imagePath: './test/src/slice',
 			stylesheetPath: './test/dist/css',
 			spritePath: './test/dist/sprites',
-			nameSpace: '',
-			outputDimensions: true
+			nameSpace: ''
 		}), perfectionist({
 			maxAtRuleLength: false
 		})]))

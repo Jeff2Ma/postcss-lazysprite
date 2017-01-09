@@ -136,7 +136,7 @@ gulp.task('css', function () {
 > Relative path to the folder that will keep your output spritesheet(s).
 
 - Default: `./`
-- Required: `true`
+- Required: `false`
 
 #### nameSpace
 
