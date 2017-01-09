@@ -5,6 +5,7 @@ var _ = require('lodash');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
 var md5 = require('spark-md5').hash;
+var md5File = require('md5-file');
 var gutil = require('gulp-util');
 var Promise = require('bluebird');
 
@@ -109,7 +110,7 @@ function extractImages(css, options) {
 		var files = fs.readdirSync(imageDir);
 		files.forEach(function (filename) {
 			// Have to be png file
-			var reg = /\.(png|svg)\b/i;
+			var reg = /\.(png)\b/i;
 			if (!reg.test(filename)) {
 				return null;
 			}
@@ -129,12 +130,12 @@ function extractImages(css, options) {
 			// .pop() to get the last element in array
 			image.dir = imageDir.split(path.sep).pop();
 			image.groups = [image.dir];
-			image.selector = image.dir + '__icon-' + image.name.split('.')[0];
+			image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png');
 
 			// For retina
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
-				image.selector = image.dir + '__icon-' + image.name.split('@')[0];
+				image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png', true);
 			}
 
 			// Get absolute path of image
@@ -291,7 +292,7 @@ function runSpriteSmith(images, options) {
 				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 				_.each(config.src, function (image) {
-					checkstring.push(md5(fs.readFileSync(image).toString()));
+					checkstring.push(md5File.sync(image));
 				});
 
 				checkstring = md5(checkstring.join('&'));
@@ -487,6 +488,23 @@ function getAtRuleValue(params) {
 	return value;
 }
 
+// Get the base name of file.
+// Example1: demo.png/demo@2x.png/demo_2x.png ==> demo
+// Example2: demo.new.png/demo.new@2x.png  ==> demo.new
+// Note: 'extname' should like `.png`(also as default)
+function getBaseName(filepath, extname, retina) {
+	extname = extname || '.png';
+	retina = retina || false;
+	var basename = path.basename(filepath, extname);
+	if (retina) {
+		basename = _.trimEnd(basename, '@2x');
+		basename = _.trimEnd(basename, '@3x');
+		basename = _.trimEnd(basename, '_2x');
+		basename = _.trimEnd(basename, '_3x');
+	}
+	return basename;
+}
+
 // Set the sprite file name form groups.
 function makeSpritePath(options, groups) {
 	var base = options.spritePath;
@@ -533,12 +551,12 @@ function getBackgroundSize(image) {
 
 // Check whether the image is retina
 function isRetinaImage(url) {
-	return /@(\d)x\.[a-z]{3,4}$/gi.test(url.split('#')[0]);
+	return /@(\d)x\.[a-z]{3,4}$/gi.test(url);
 }
 
 // Return the value of retina ratio.
 function getRetinaRatio(url) {
-	var matches = /@(\d)x\.[a-z]{3,4}$/gi.exec(url.split('#')[0]);
+	var matches = /@(\d)x\.[a-z]{3,4}$/gi.exec(url);
 	var ratio = _.parseInt(matches[1]);
 	return ratio;
 }
