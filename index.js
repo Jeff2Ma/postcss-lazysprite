@@ -4,7 +4,7 @@ var postcss = require('postcss');
 var _ = require('lodash');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
-var md5 = require('md5');
+var md5 = require('spark-md5').hash;
 var gutil = require('gulp-util');
 var Promise = require('bluebird');
 
@@ -291,7 +291,7 @@ function runSpriteSmith(images, options) {
 				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 				_.each(config.src, function (image) {
-					checkstring.push(image + '=' + md5(fs.readFileSync(image).toString()));
+					checkstring.push(md5(fs.readFileSync(image).toString()));
 				});
 
 				checkstring = md5(checkstring.join('&'));
