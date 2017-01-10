@@ -14,8 +14,13 @@
 	font-weight: bold;
 }
 
-/* It's necessary to test the source map of this rule and others. */
-@lazysprite './center';
+/**
+ *
+ * It's necessary to test the source map of this rule and others.
+ *
+ * Not suggest to use atRule value like `./center` as it will remain issue on Windows system.
+ */
+@lazysprite 'center';
 
 h2 {
 	font-size: 16px;
