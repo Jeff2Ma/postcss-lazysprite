@@ -7,6 +7,10 @@ Change log for postcss-lazysprite.
 
 - Migrate from `Q` to `Bluebird` as promise libary.
 
+- Support 3x retina.
+
+- Support `@2x`, `@3x`, `_2x`, `_3x` suffix.
+
 - Add eslint for better code stander.
 
 - All comments are English.
