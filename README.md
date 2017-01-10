@@ -5,7 +5,8 @@
 <img align="right" width="130" height="130" title="PostCSS" src="http://postcss.github.io/postcss/logo.svg">
 
 [![Build Status](https://travis-ci.org/Jeff2Ma/postcss-lazysprite.svg?branch=master)](https://travis-ci.org/Jeff2Ma/postcss-lazysprite)
-[![npm version](https://badge.fury.io/js/postcss-lazysprite.svg)](http://badge.fury.io/js/postcss-lazysprite)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/32r7s2skrgm9ubva?svg=true)](https://ci.appveyor.com/project/Jeff2Ma/postcss-lazysprite)
+[![npm version](https://img.shields.io/npm/v/npm.svg?colorB=4c1)](https://github.com/Jeff2Ma/postcss-lazysprite)
 [![lic-image](https://img.shields.io/npm/l/postcss-lazysprite.svg)](https://github.com/Jeff2Ma/postcss-lazysprite/blob/master/LICENSE.md)
 [![change-log](https://img.shields.io/badge/changelog-md-blue.svg)](https://github.com/Jeff2Ma/postcss-lazysprite/blob/master/CHANGELOG.md)
 

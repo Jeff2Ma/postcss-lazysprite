@@ -13,6 +13,7 @@ branches:
   # whitelist
   only:
     - master
+    - 1.0.x
 
 # Do not build on tags (GitHub and BitBucket)
 skip_tags: true
@@ -25,7 +26,7 @@ image: Visual Studio 2015
 
 environment:
   matrix:
-    - nodejs_version: 5.0.0
+    - nodejs_version: 4.7.0
 
 # scripts that run after cloning repository
 install:
@@ -33,11 +34,24 @@ install:
   - ps: Install-Product node $env:nodejs_version
   # batch commands start from cmd:
   - npm cache clean
-  - npm install
+  - npm i
+  - npm install -g gulp
 
 # to run your custom scripts instead of automatic tests
 test_script:
   # Output useful info for debugging.
   - node --version && npm --version
-  # run tests
+  - npm i
+  - pwd
   - gulp css
+
+# Don't actually build.
+build: off
+
+matrix:
+  fast_finish: true
+
+cache:
+  # local npm modules
+  - C:\Users\appveyor\AppData\Roaming\npm-cache -> package.json         # npm cache
+  - node_modules -> package.json
