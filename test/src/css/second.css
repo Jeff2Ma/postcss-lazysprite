@@ -22,9 +22,13 @@
  */
 @lazysprite 'center';
 
+@lazysprite 'logo';
+
+
+
+
 h2 {
 	font-size: 16px;
 }
 
 /* single quotes (') and double quotes (") are both support*/
-@lazysprite 'logo';

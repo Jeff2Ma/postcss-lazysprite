@@ -102,7 +102,9 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
  * @return {Promise}
  */
 function extractImages(css, options) {
-	var images = [];
+	return new Promise(function (resolve) {
+
+		var images = [];
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
@@ -118,6 +120,7 @@ function extractImages(css, options) {
 		// Get absolute path of directory.
 		var imageDir = path.resolve(options.imagePath, sliceDir);
 
+		/*
 		// Foreach the images and set image object.
 		var files = fs.readdirSync(imageDir);
 		files.forEach(function (filename) {
@@ -154,8 +157,59 @@ function extractImages(css, options) {
 			image.path = path.resolve(imageDir, filename);
 			images.push(image);
 		});
+		*/
+
+		function readDir(imageDir) {
+			return fs.readdirAsync(imageDir).filter(function (filename) {
+				// 需检测为png 图片
+				var reg = /\.(png|svg)\b/i;
+				return reg.test(filename);
+			}).map(function (filename) {
+				var image = {
+					path: null, // Absolute path
+					name: null, // Filename
+					stylesheetPath: stylesheetPath,
+					ratio: 1,
+					groups: [],
+					token: ''
+				};
+
+				image.name = filename;
+
+				// Set the directory name as sprite file name,
+				// .pop() to get the last element in array
+				image.dir = imageDir.split(path.sep).pop();
+				image.groups = [image.dir];
+				image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png');
+
+				// For retina
+				if (isRetinaImage(image.name)) {
+					image.ratio = getRetinaRatio(image.name);
+					image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png', true);
+				}
+
+				// Get absolute path of image
+				image.path = path.resolve(imageDir, filename);
+				return image;
+			}).reduce(function (a, b) {
+				return a.concat(b);
+			}, []);
+		}
+
+
+		readDir(imageDir).then(function (results) {
+				images = results;
+				log(results);
+				resolve([images, options]);
+			})
+			.catch(function (err) {
+				if (err) {
+					reject(err);
+				}
+			});
+		});
+	// return Promise.all([images, options]);
 	});
-	return Promise.resolve([images, options]);
 }
 
 /**
@@ -165,6 +219,7 @@ function extractImages(css, options) {
  * @return {Promise}
  */
 function applyGroupBy(images, options) {
+	log(images.length)
 	return Promise.reduce(options.groupBy, function (images, group) {
 		return Promise.map(images, function (image) {
 			return Promise.resolve(group(image)).then(function (group) {

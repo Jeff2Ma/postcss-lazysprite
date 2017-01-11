@@ -5,7 +5,7 @@
 */
 
 /* relative to path where according to `stylesheetPath` option */
-@lazysprite "filetype";
+/*@lazysprite "filetype";*/
 
 body {
 	position: relative;
