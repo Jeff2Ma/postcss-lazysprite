@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite.
 
+## [0.1.1] - 2017-01-11
+
+- 	Fix path problem on Windows stystem.
+
 ## [0.1.0] - 2017-01-09
 
 - Migrate from `Q` to `Bluebird` as promise libary.
