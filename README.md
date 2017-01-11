@@ -6,7 +6,7 @@
 
 [![Build Status](https://travis-ci.org/Jeff2Ma/postcss-lazysprite.svg?branch=master)](https://travis-ci.org/Jeff2Ma/postcss-lazysprite)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/32r7s2skrgm9ubva?svg=true)](https://ci.appveyor.com/project/Jeff2Ma/postcss-lazysprite)
-[![npm version](https://badge.fury.io/js/postcss-lazysprite.svg)](https://github.com/Jeff2Ma/postcss-lazysprite)
+[![npm version](https://badge.fury.io/js/postcss-lazysprite.svg)](https://www.npmjs.com/package/postcss-lazysprite)
 [![lic-image](https://img.shields.io/npm/l/postcss-lazysprite.svg)](https://github.com/Jeff2Ma/postcss-lazysprite/blob/master/LICENSE.md)
 [![change-log](https://img.shields.io/badge/changelog-md-blue.svg)](https://github.com/Jeff2Ma/postcss-lazysprite/blob/master/CHANGELOG.md)
 

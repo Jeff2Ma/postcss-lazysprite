@@ -51,8 +51,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 
 	// Option `imagePath` is required
 	if (!options.imagePath) {
-		var errMsg = log('Lazysprite:', gutil.colors.red('Option `imagePath` is undefined! Please set it and restart.'));
-		throw errMsg;
+		throw log('Lazysprite:', gutil.colors.red('Option `imagePath` is undefined! Please set it and restart.'));
 	}
 
 	// Paths
@@ -89,8 +88,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 				return updateReferences(images, options, sprites, css);
 			})
 			.catch(function (err) {
-				err = log('Lazysprite:', gutil.colors.red(err.message));
-				throw err;
+				throw log('Lazysprite:', gutil.colors.red(err.message));
 			});
 	};
 });
@@ -117,6 +115,12 @@ function extractImages(css, options) {
 
 		// Get absolute path of directory.
 		var imageDir = path.resolve(options.imagePath, sliceDir);
+
+		// check whether dir exist.
+		if (!fs.existsSync(imageDir)) {
+			log('Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"'));
+			return null;
+		}
 
 		// Foreach the images and set image object.
 		var files = fs.readdirSync(imageDir);

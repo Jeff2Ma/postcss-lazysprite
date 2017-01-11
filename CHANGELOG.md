@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite.
 
+## [0.1.2] - 2017-01-11
+
+- 	Add better alert when with wrong dirname.
+
 ## [0.1.1] - 2017-01-11
 
 - 	Fix path problem on Windows stystem.
