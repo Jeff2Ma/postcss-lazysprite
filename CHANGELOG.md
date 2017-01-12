@@ -3,6 +3,14 @@
 
 Change log for postcss-lazysprite.
 
+## [0.1.4] - 2017-01-12
+
+- 	Fix wrong readme demo which will confuse users.
+
+## [0.1.3] - 2017-01-12
+
+- 	Fix wrong english grammar.
+
 ## [0.1.2] - 2017-01-11
 
 - 	Add better alert when with wrong dirname.
