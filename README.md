@@ -12,7 +12,7 @@
 
 A [PostCSS](https://github.com/postcss/postcss) plugin that generates sprites from the directory of images automatically.
 
-Another lazy way to generate sprites and proper CSS with retina support. Feel free to use it :)
+A lazy way to generate sprites and proper CSS with retina support. Feel free to use it :)
 
 ## Function
 
@@ -158,7 +158,7 @@ gulp.task('css', function () {
 
 ## Contributing
 
-Thanks the inspirations from [postcss-easysprites](https://github.com/glebmachine/postcss-easysprites) plugin.
+Thanks the inspirations from [postcss-sprites](https://github.com/2createStudio/postcss-sprites) plugin.
 
 [Issues](https://github.com/Jeff2Ma/postcss-lazysprite/issues) and [Pull requests](https://github.com/Jeff2Ma/postcss-lazysprite/pulls) are welcome.
 

@@ -8,3 +8,4 @@ CHANGELOG.md
 test
 gulpfile.js
 .travis.yml
+appveyor.yml
