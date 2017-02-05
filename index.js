@@ -5,8 +5,8 @@ var _ = require('lodash');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
 var md5 = require('spark-md5').hash;
-var md5File = require('md5-file');
 var gutil = require('gulp-util');
+var revHash = require('rev-hash');
 var Promise = require('bluebird');
 
 var space = postcss.list.space;
@@ -101,6 +101,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
  */
 function extractImages(css, options) {
 	var images = [];
+	var hashs = [];
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
@@ -137,6 +138,7 @@ function extractImages(css, options) {
 				stylesheetPath: stylesheetPath,
 				ratio: 1,
 				groups: [],
+				hash: null,
 				token: ''
 			};
 
@@ -154,8 +156,13 @@ function extractImages(css, options) {
 				image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png', true);
 			}
 
-			// Get absolute path of image
+			// Get absfolute path of image
 			image.path = path.resolve(imageDir, filename);
+
+			// Hash
+			var buffer = fs.readFileSync(image.path);
+			image.hash = revHash(buffer);
+			hashs.push(image.hash);
 			images.push(image);
 		});
 	});
@@ -208,6 +215,8 @@ function setTokens(images, options, css) {
 			var has2x = false;
 			var has3x = false;
 
+			var hashs = [];
+
 			// Foreach every image object
 			_.forEach(images, function (image) {
 				// Only work when equal to directory name
@@ -248,6 +257,8 @@ function setTokens(images, options, css) {
 					default:
 						break;
 					}
+
+					hashs.push(image.hash);
 				}
 			});
 
@@ -259,8 +270,19 @@ function setTokens(images, options, css) {
 				atRuleParent.append(mediaAtRule3x);
 			}
 
+			var hashsOrigin = md5(_.sortBy(hashs).join('&'));
+
+			var hashsComment = postcss.comment({
+				text: hashsOrigin,
+				raws: {
+					before: ' ',
+					left: '@hashs|' + sliceDirname + '|',
+					right: ''
+				}
+			});
+
 			// Remove @lazysprite atRule.
-			atRule.remove();
+			atRule.replaceWith(hashsComment);
 		});
 		resolve([images, options]);
 	});
@@ -308,7 +330,9 @@ function runSpriteSmith(images, options) {
 				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 				_.each(config.src, function (image) {
-					checkstring.push(md5File.sync(image));
+					var checkBuffer = fs.readFileSync(image);
+					var checkHash = revHash(checkBuffer);
+					checkstring.push(checkHash);
 				});
 
 				checkstring = md5(checkstring.join('&'));
@@ -317,7 +341,6 @@ function runSpriteSmith(images, options) {
 				if (cache[checkstring]) {
 					var deferred = Promise.pending();
 					var results = cache[checkstring];
-
 					results.isFromCache = true;
 					deferred.resolve(results);
 					return deferred.promise;
