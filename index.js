@@ -101,7 +101,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
  */
 function extractImages(css, options) {
 	var images = [];
-	var hashs = [];
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
@@ -138,7 +137,6 @@ function extractImages(css, options) {
 				stylesheetPath: stylesheetPath,
 				ratio: 1,
 				groups: [],
-				hash: null,
 				token: ''
 			};
 
@@ -159,16 +157,10 @@ function extractImages(css, options) {
 			// Get absfolute path of image
 			image.path = path.resolve(imageDir, filename);
 
-			// Hash
-			var buffer = fs.readFileSync(image.path);
-			image.hash = revHash(buffer);
-			hashs.push(image.hash);
+			// Push image obj to array.
 			images.push(image);
 		});
 	});
-
-	// var currentHashs = md5(_.sortBy(hashs).join('&')).slice(0, 10);
-	// var hashsInSprite =
 
 	return Promise.resolve([images, options]);
 }
@@ -219,8 +211,6 @@ function setTokens(images, options, css) {
 			var has2x = false;
 			var has3x = false;
 
-			var hashs = [];
-
 			// Foreach every image object
 			_.forEach(images, function (image) {
 				// Only work when equal to directory name
@@ -261,8 +251,6 @@ function setTokens(images, options, css) {
 					default:
 						break;
 					}
-
-					hashs.push(image.hash);
 				}
 			});
 
@@ -273,20 +261,6 @@ function setTokens(images, options, css) {
 			if (has3x) {
 				atRuleParent.append(mediaAtRule3x);
 			}
-
-			// hashs in one dir images files.
-			// var hashsOrigin = md5(_.sortBy(hashs).join('&')).slice(0, 10);
-            //
-			// var hashsComment = postcss.comment({
-			// 	text: hashsOrigin,
-			// 	raws: {
-			// 		before: ' ',
-			// 		left: '@hashs|',
-			// 		right: ''
-			// 	}
-			// });
-
-			// Deal with @lazysprite atRule.
 
 			atRule.remove();
 		});
@@ -331,24 +305,25 @@ function runSpriteSmith(images, options) {
 					}
 				}
 
-				var checkstring = [];
+				var checkString = [];
 
 				_.each(config.src, function (image) {
 					var checkBuffer = fs.readFileSync(image);
 					var checkHash = revHash(checkBuffer);
-					checkstring.push(checkHash);
+					checkString.push(checkHash);
 				});
 
-				checkstring = md5(checkstring.join('&'));
-				config.groupHash = checkstring.slice(0, 10);
+				// Get the group files hash so that next step can SmartUpdate.
+				checkString = md5(checkString.join('&'));
+				config.groupHash = checkString.slice(0, 10);
 
 				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 
 				// Get data from cache (avoid spritesmith)
-				if (cache[checkstring]) {
+				if (cache[checkString]) {
 					var deferred = Promise.pending();
-					var results = cache[checkstring];
+					var results = cache[checkString];
 					results.isFromCache = true;
 					deferred.resolve(results);
 					return deferred.promise;
@@ -361,17 +336,19 @@ function runSpriteSmith(images, options) {
 
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
+
+						// Pass the group file hash for next `saveSprites` function.
 						result.groupHash = config.groupHash;
 
 						// Cache - clean old
-						var oldCheckstring = cacheIndex[config.spriteName];
-						if (oldCheckstring && cache[oldCheckstring]) {
-							delete cache[oldCheckstring];
+						var oldCheckString = cacheIndex[config.spriteName];
+						if (oldCheckString && cache[oldCheckString]) {
+							delete cache[oldCheckString];
 						}
 
 						// Cache - add brand new data
-						cacheIndex[config.spriteName] = checkstring;
-						cache[checkstring] = result;
+						cacheIndex[config.spriteName] = checkString;
+						cache[checkString] = result;
 
 						return result;
 					});
@@ -410,9 +387,9 @@ function saveSprites(images, options, sprites) {
 				sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
 				sprite.filename = sprite.filename.replace('.@', '@');
 
-				// If this file is up to date
 				var deferred = Promise.pending();
 
+				// If this file is up to date
 				if (sprite.isFromCache) {
 					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
 					deferred.resolve(sprite);
