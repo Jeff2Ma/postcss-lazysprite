@@ -166,6 +166,10 @@ function extractImages(css, options) {
 			images.push(image);
 		});
 	});
+
+	// var currentHashs = md5(_.sortBy(hashs).join('&')).slice(0, 10);
+	// var hashsInSprite =
+
 	return Promise.resolve([images, options]);
 }
 
@@ -270,19 +274,21 @@ function setTokens(images, options, css) {
 				atRuleParent.append(mediaAtRule3x);
 			}
 
-			var hashsOrigin = md5(_.sortBy(hashs).join('&'));
+			// hashs in one dir images files.
+			// var hashsOrigin = md5(_.sortBy(hashs).join('&')).slice(0, 10);
+            //
+			// var hashsComment = postcss.comment({
+			// 	text: hashsOrigin,
+			// 	raws: {
+			// 		before: ' ',
+			// 		left: '@hashs|',
+			// 		right: ''
+			// 	}
+			// });
 
-			var hashsComment = postcss.comment({
-				text: hashsOrigin,
-				raws: {
-					before: ' ',
-					left: '@hashs|' + sliceDirname + '|',
-					right: ''
-				}
-			});
+			// Deal with @lazysprite atRule.
 
-			// Remove @lazysprite atRule.
-			atRule.replaceWith(hashsComment);
+			atRule.remove();
 		});
 		resolve([images, options]);
 	});
@@ -327,8 +333,6 @@ function runSpriteSmith(images, options) {
 
 				var checkstring = [];
 
-				// Collect images datechanged
-				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 				_.each(config.src, function (image) {
 					var checkBuffer = fs.readFileSync(image);
 					var checkHash = revHash(checkBuffer);
@@ -336,6 +340,10 @@ function runSpriteSmith(images, options) {
 				});
 
 				checkstring = md5(checkstring.join('&'));
+				config.groupHash = checkstring.slice(0, 10);
+
+				// Collect images datechanged
+				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
 
 				// Get data from cache (avoid spritesmith)
 				if (cache[checkstring]) {
@@ -353,6 +361,7 @@ function runSpriteSmith(images, options) {
 
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
+						result.groupHash = config.groupHash;
 
 						// Cache - clean old
 						var oldCheckstring = cacheIndex[config.spriteName];
@@ -397,12 +406,22 @@ function saveSprites(images, options, sprites) {
 		var all = _
 			.chain(sprites)
 			.map(function (sprite) {
-				sprite.path = makeSpritePath(options, sprite.groups);
+				sprite.path = makeSpritePath(options, sprite.groups, sprite.groupHash);
+				sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
+				sprite.filename = sprite.filename.replace('.@', '@');
 
 				// If this file is up to date
+				var deferred = Promise.pending();
+
 				if (sprite.isFromCache) {
-					var deferred = Promise.pending();
 					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
+					deferred.resolve(sprite);
+					return deferred.promise;
+				}
+
+				// If this sprites image file is exist
+				if (fs.existsSync(sprite.path)) {
+					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -545,9 +564,9 @@ function getBaseName(filepath, extname, retina) {
 }
 
 // Set the sprite file name form groups.
-function makeSpritePath(options, groups) {
+function makeSpritePath(options, groups, groupHash) {
 	var base = options.spritePath;
-	var file = path.resolve(base, groups.join('.') + '.png');
+	var file = path.resolve(base, groups.join('.') + '_' + groupHash + '.png');
 	return file.replace('.@', '@');
 }
 
