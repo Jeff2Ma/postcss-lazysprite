@@ -46,7 +46,8 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		groupBy: options.groupBy || [],
 		padding: options.padding ? options.padding : 10,
 		nameSpace: options.nameSpace || '',
-		outputDimensions: options.outputDimensions || true
+		outputDimensions: options.outputDimensions || true,
+		smartUpdate: options.smartUpdate || true
 	}, options);
 
 	// Option `imagePath` is required
@@ -384,9 +385,6 @@ function saveSprites(images, options, sprites) {
 			.chain(sprites)
 			.map(function (sprite) {
 				sprite.path = makeSpritePath(options, sprite.groups, sprite.groupHash);
-				sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
-				sprite.filename = sprite.filename.replace('.@', '@');
-
 				var deferred = Promise.pending();
 
 				// If this file is up to date
@@ -396,11 +394,15 @@ function saveSprites(images, options, sprites) {
 					return deferred.promise;
 				}
 
-				// If this sprites image file is exist
-				if (fs.existsSync(sprite.path)) {
-					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
-					deferred.resolve(sprite);
-					return deferred.promise;
+				// If this sprites image file is exist. Only work when option `smartUpdate` is true.
+				if (options.smartUpdate) {
+					sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
+					sprite.filename = sprite.filename.replace('.@', '@');
+					if (fs.existsSync(sprite.path)) {
+						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
+						deferred.resolve(sprite);
+						return deferred.promise;
+					}
 				}
 
 				// Save new file version
@@ -543,7 +545,12 @@ function getBaseName(filepath, extname, retina) {
 // Set the sprite file name form groups.
 function makeSpritePath(options, groups, groupHash) {
 	var base = options.spritePath;
-	var file = path.resolve(base, groups.join('.') + '_' + groupHash + '.png');
+	var file;
+	if (options.smartUpdate) {
+		file = path.resolve(base, groups.join('.') + '_' + groupHash + '.png');
+	} else {
+		file = path.resolve(base, groups.join('.') + '.png');
+	}
 	return file.replace('.@', '@');
 }
 
