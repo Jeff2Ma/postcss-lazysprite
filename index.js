@@ -5,8 +5,8 @@ var _ = require('lodash');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
 var md5 = require('spark-md5').hash;
-var md5File = require('md5-file');
 var gutil = require('gulp-util');
+var revHash = require('rev-hash');
 var Promise = require('bluebird');
 
 var space = postcss.list.space;
@@ -46,7 +46,8 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		groupBy: options.groupBy || [],
 		padding: options.padding ? options.padding : 10,
 		nameSpace: options.nameSpace || '',
-		outputDimensions: options.outputDimensions || true
+		outputDimensions: options.outputDimensions || true,
+		smartUpdate: options.smartUpdate || true
 	}, options);
 
 	// Option `imagePath` is required
@@ -154,11 +155,14 @@ function extractImages(css, options) {
 				image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png', true);
 			}
 
-			// Get absolute path of image
+			// Get absfolute path of image
 			image.path = path.resolve(imageDir, filename);
+
+			// Push image obj to array.
 			images.push(image);
 		});
 	});
+
 	return Promise.resolve([images, options]);
 }
 
@@ -259,7 +263,6 @@ function setTokens(images, options, css) {
 				atRuleParent.append(mediaAtRule3x);
 			}
 
-			// Remove @lazysprite atRule.
 			atRule.remove();
 		});
 		resolve([images, options]);
@@ -303,21 +306,25 @@ function runSpriteSmith(images, options) {
 					}
 				}
 
-				var checkstring = [];
+				var checkString = [];
+
+				_.each(config.src, function (image) {
+					var checkBuffer = fs.readFileSync(image);
+					var checkHash = revHash(checkBuffer);
+					checkString.push(checkHash);
+				});
+
+				// Get the group files hash so that next step can SmartUpdate.
+				checkString = md5(checkString.join('&'));
+				config.groupHash = checkString.slice(0, 10);
 
 				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
-				_.each(config.src, function (image) {
-					checkstring.push(md5File.sync(image));
-				});
-
-				checkstring = md5(checkstring.join('&'));
 
 				// Get data from cache (avoid spritesmith)
-				if (cache[checkstring]) {
+				if (cache[checkString]) {
 					var deferred = Promise.pending();
-					var results = cache[checkstring];
-
+					var results = cache[checkString];
 					results.isFromCache = true;
 					deferred.resolve(results);
 					return deferred.promise;
@@ -331,15 +338,18 @@ function runSpriteSmith(images, options) {
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
 
+						// Pass the group file hash for next `saveSprites` function.
+						result.groupHash = config.groupHash;
+
 						// Cache - clean old
-						var oldCheckstring = cacheIndex[config.spriteName];
-						if (oldCheckstring && cache[oldCheckstring]) {
-							delete cache[oldCheckstring];
+						var oldCheckString = cacheIndex[config.spriteName];
+						if (oldCheckString && cache[oldCheckString]) {
+							delete cache[oldCheckString];
 						}
 
 						// Cache - add brand new data
-						cacheIndex[config.spriteName] = checkstring;
-						cache[checkstring] = result;
+						cacheIndex[config.spriteName] = checkString;
+						cache[checkString] = result;
 
 						return result;
 					});
@@ -374,14 +384,25 @@ function saveSprites(images, options, sprites) {
 		var all = _
 			.chain(sprites)
 			.map(function (sprite) {
-				sprite.path = makeSpritePath(options, sprite.groups);
+				sprite.path = makeSpritePath(options, sprite.groups, sprite.groupHash);
+				var deferred = Promise.pending();
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					var deferred = Promise.pending();
 					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
 					deferred.resolve(sprite);
 					return deferred.promise;
+				}
+
+				// If this sprites image file is exist. Only work when option `smartUpdate` is true.
+				if (options.smartUpdate) {
+					sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
+					sprite.filename = sprite.filename.replace('.@', '@');
+					if (fs.existsSync(sprite.path)) {
+						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
+						deferred.resolve(sprite);
+						return deferred.promise;
+					}
 				}
 
 				// Save new file version
@@ -522,9 +543,14 @@ function getBaseName(filepath, extname, retina) {
 }
 
 // Set the sprite file name form groups.
-function makeSpritePath(options, groups) {
+function makeSpritePath(options, groups, groupHash) {
 	var base = options.spritePath;
-	var file = path.resolve(base, groups.join('.') + '.png');
+	var file;
+	if (options.smartUpdate) {
+		file = path.resolve(base, groups.join('.') + '_' + groupHash + '.png');
+	} else {
+		file = path.resolve(base, groups.join('.') + '.png');
+	}
 	return file.replace('.@', '@');
 }
 
