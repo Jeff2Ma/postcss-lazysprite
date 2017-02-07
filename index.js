@@ -315,7 +315,7 @@ function runSpriteSmith(images, options) {
 				});
 
 				// Get the group files hash so that next step can SmartUpdate.
-				checkString = md5(checkString.join('&'));
+				checkString = md5(_.sortBy(checkString).join('&'));
 				config.groupHash = checkString.slice(0, 10);
 
 				// Collect images datechanged

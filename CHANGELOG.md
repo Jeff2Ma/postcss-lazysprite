@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite.
 
+## [1.0.0] - 2017-02-07
+
+- Add smart update mod for high performance.
+
 ## [0.1.4] - 2017-01-12
 
 - 	Fix wrong readme demo which will confuse users.
