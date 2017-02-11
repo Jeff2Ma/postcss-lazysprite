@@ -34,7 +34,8 @@ gulp.task('css', function () {
 			stylesheetPath: './test/dist/css',
 			spritePath: './test/dist/sprites',
 			smartUpdate: true,
-			nameSpace: ''
+			nameSpace: '',
+			logLevel: 'debug'
 		}), perfectionist({
 			maxAtRuleLength: false
 		})]))

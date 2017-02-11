@@ -47,12 +47,15 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		padding: options.padding ? options.padding : 10,
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
-		smartUpdate: options.smartUpdate || true
+		smartUpdate: options.smartUpdate || true,
+		logLevel: options.logLevel || 'debug'  // 'debug','info','slient'
 	}, options);
 
 	// Option `imagePath` is required
 	if (!options.imagePath) {
-		throw log('Lazysprite:', gutil.colors.red('Option `imagePath` is undefined! Please set it and restart.'));
+		// throw logOld('Lazysprite:', gutil.colors.red('Option `imagePath` is undefined! Please set it and restart.'));
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `imagePath` is undefined!' +
+			' Please set it and restart.')]);
 	}
 
 	// Paths
@@ -89,7 +92,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 				return updateReferences(images, options, sprites, css);
 			})
 			.catch(function (err) {
-				throw log('Lazysprite:', gutil.colors.red(err.message));
+				throw logOld('Lazysprite:', gutil.colors.red(err.message));
 			});
 	};
 });
@@ -105,7 +108,8 @@ function extractImages(css, options) {
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
-		log('Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!'));
+		// logOld('Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!'));
+		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
 	}
 
 	// Find @lazysprite string from css
@@ -119,7 +123,8 @@ function extractImages(css, options) {
 
 		// check whether dir exist.
 		if (!fs.existsSync(imageDir)) {
-			log('Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"'));
+			// logOld('Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"'));
+			log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
 			return null;
 		}
 
@@ -389,7 +394,8 @@ function saveSprites(images, options, sprites) {
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					log('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
+					// logOld('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
+					log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -399,7 +405,9 @@ function saveSprites(images, options, sprites) {
 					sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
-						log('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
+						// logOld('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
+						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'already' +
+						' existed.']);
 						deferred.resolve(sprite);
 						return deferred.promise;
 					}
@@ -408,7 +416,8 @@ function saveSprites(images, options, sprites) {
 				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
-						log('Lazysprite:', gutil.colors.green(sprite.path), 'generated.');
+						// logOld('Lazysprite:', gutil.colors.green(sprite.path), 'generated.');
+						log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.green(sprite.path), 'generated.']);
 						return sprite;
 					});
 			})
@@ -614,8 +623,32 @@ function areAllRetina(images) {
 	});
 }
 
-// Log with same stylesheet
-function log() {
+// Log with same stylesheet and level control.
+function log(logLevel, level, content) {
+	var output = true;
+
+	// Whenever lv1 will be display
+	if (level === 'lv1') {
+		output = true;
+	} else {
+		switch (logLevel) {
+		case 'slient':
+			output = false;
+			break;
+		case 'info':
+			output = false;
+			break;
+		default:
+			output = true;
+		}
+	}
+	if (output) {
+		var data = Array.prototype.slice.call(content);
+		gutil.log.apply(false, data);
+	}
+}
+
+function logOld() {
 	var data = Array.prototype.slice.call(arguments);
 	gutil.log.apply(false, data);
 }
