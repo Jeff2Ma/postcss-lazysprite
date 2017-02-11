@@ -1,7 +1,5 @@
 # postcss-lazysprite
 
-> This plugin is still in developing.
-
 <img align="right" width="130" height="130" title="PostCSS" src="http://postcss.github.io/postcss/logo.svg">
 
 [![Build Status](https://travis-ci.org/Jeff2Ma/postcss-lazysprite.svg?branch=master)](https://travis-ci.org/Jeff2Ma/postcss-lazysprite)
@@ -153,6 +151,24 @@ gulp.task('css', function () {
 > NameSpace(Prefix) of the class name of each image. The `className` = `nameSpace` + `fileName`.
 
 - Default: null
+- Required: `false`
+
+### logLevel
+
+> Deside which level to output log. Can be either "debug", "info", or "silent".
+ 
+```javascript
+// Show me additional info about the process
+logLevel: "debug"
+
+// Just show basic info
+logLevel: "info"
+
+// output NOTHING except alert
+logLevel: "silent"
+```
+
+- Default: `debug`
 - Required: `false`
 
 #### outputDimensions

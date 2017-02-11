@@ -53,7 +53,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 
 	// Option `imagePath` is required
 	if (!options.imagePath) {
-		// throw logOld('Lazysprite:', gutil.colors.red('Option `imagePath` is undefined! Please set it and restart.'));
 		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `imagePath` is undefined!' +
 			' Please set it and restart.')]);
 	}
@@ -92,7 +91,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 				return updateReferences(images, options, sprites, css);
 			})
 			.catch(function (err) {
-				throw logOld('Lazysprite:', gutil.colors.red(err.message));
+				throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red(err.message)]);
 			});
 	};
 });
@@ -108,7 +107,6 @@ function extractImages(css, options) {
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
-		// logOld('Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!'));
 		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
 	}
 
@@ -123,7 +121,6 @@ function extractImages(css, options) {
 
 		// check whether dir exist.
 		if (!fs.existsSync(imageDir)) {
-			// logOld('Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"'));
 			log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
 			return null;
 		}
@@ -394,7 +391,6 @@ function saveSprites(images, options, sprites) {
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					// logOld('Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.');
 					log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
@@ -405,7 +401,6 @@ function saveSprites(images, options, sprites) {
 					sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
-						// logOld('Lazysprite:', gutil.colors.yellow(sprite.path), 'already existed.');
 						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'already' +
 						' existed.']);
 						deferred.resolve(sprite);
@@ -416,7 +411,6 @@ function saveSprites(images, options, sprites) {
 				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
-						// logOld('Lazysprite:', gutil.colors.green(sprite.path), 'generated.');
 						log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.green(sprite.path), 'generated.']);
 						return sprite;
 					});
@@ -628,9 +622,7 @@ function log(logLevel, level, content) {
 	var output = true;
 
 	// Whenever lv1 will be display
-	if (level === 'lv1') {
-		output = true;
-	} else {
+	if (level === 'lv2') {
 		switch (logLevel) {
 		case 'slient':
 			output = false;
@@ -642,13 +634,9 @@ function log(logLevel, level, content) {
 			output = true;
 		}
 	}
+
 	if (output) {
 		var data = Array.prototype.slice.call(content);
 		gutil.log.apply(false, data);
 	}
-}
-
-function logOld() {
-	var data = Array.prototype.slice.call(arguments);
-	gutil.log.apply(false, data);
 }
