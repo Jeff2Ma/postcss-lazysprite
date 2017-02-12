@@ -398,7 +398,7 @@ function saveSprites(images, options, sprites) {
 
 				// If this sprites image file is exist. Only work when option `smartUpdate` is true.
 				if (options.smartUpdate) {
-					sprite.filename = sprite.groups.join('.') + '_' + sprite.groupHash + '.png';
+					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
 						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'already' +
@@ -550,7 +550,7 @@ function makeSpritePath(options, groups, groupHash) {
 	var base = options.spritePath;
 	var file;
 	if (options.smartUpdate) {
-		file = path.resolve(base, groups.join('.') + '_' + groupHash + '.png');
+		file = path.resolve(base, groups.join('.') + '.' + groupHash + '.png');
 	} else {
 		file = path.resolve(base, groups.join('.') + '.png');
 	}
@@ -621,7 +621,7 @@ function areAllRetina(images) {
 function log(logLevel, level, content) {
 	var output = true;
 
-	// Whenever lv1 will be display
+	// lv1 will be display whatever
 	if (level === 'lv2') {
 		switch (logLevel) {
 		case 'slient':
