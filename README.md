@@ -11,8 +11,7 @@ A [PostCSS](https://github.com/postcss/postcss) plugin that generates sprites fr
 
 A lazy way to generate sprites and proper CSS with retina support. Feel free to use it :)
 
-## Function
-
+## Example
 
 ### Input
 
@@ -75,6 +74,8 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
             └── pdf@2x.png
 ```
 
+More examples with different options: [smartUpdate](./examples/smartUpdate.md), [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md)
+
 ## Features
 
 - Simple and easy, just need to put your images to the special folder.
@@ -108,7 +109,6 @@ gulp.task('css', function () {
 			imagePath:'./test/src/slice',
 			stylesheetPath: './test/dist/css',
 			spritePath: './test/dist/slice',
-			nameSpace: 'icon-',
 			smartUpdate: true,
 			outputDimensions: true
 		})]))
@@ -120,7 +120,7 @@ gulp.task('css', function () {
 
 #### imagePath
 
-> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the base/* relative to stylesheets/ according to `from` option above */ path to the value of `@lazysprite`.
+> Relative path to the folder that sprite images are stored. For resolving absolute images. This option also as the base relative to the value of `@lazysprite` which is what you output.
 
 - Default: null
 - Required: `true`
@@ -141,10 +141,10 @@ gulp.task('css', function () {
 
 #### smartUpdate
 
-> Deside whether run `smartUpdate` mod.`smartUpdate` mod can create a hash for sprites files revving so that it can be updated when it is real need. It is suggested to open so that to make sprites with hight performance. 
+> Deside whether run `smartUpdate` mod.`smartUpdate` mod can create a hash for sprites files revving so that it can be updated when it is real need (like [compass spriting](http://compass-style.org/help/tutorials/spriting/) ). It is suggested to open so that to make sprites with hight performance. 
 
-- Default: `true`
-- Required: `true`
+- Default: `false`
+- Required: `false`
 
 #### nameSpace
 
@@ -168,7 +168,7 @@ logLevel: "info"
 logLevel: "silent"
 ```
 
-- Default: `debug`
+- Default: `info`
 - Required: `false`
 
 #### outputDimensions
@@ -189,5 +189,6 @@ Thanks the inspirations from [postcss-sprites](https://github.com/2createStudio/
 $ git clone https://github.com/Jeff2Ma/postcss-lazysprite
 $ cd postcss-lazysprite
 $ npm i
-$ gulp
+$ gulp # for dev
+$ gulp test # for test
 ```

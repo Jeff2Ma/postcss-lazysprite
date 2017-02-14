@@ -9,6 +9,8 @@ Change log for postcss-lazysprite.
 
 - Add logLevel to control log output level.
 
+- Add more examples and tests.
+
 ## [0.1.4] - 2017-01-12
 
 - 	Fix wrong readme demo which will confuse users.

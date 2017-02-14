@@ -13,11 +13,11 @@ var lazysprite = require('../index.js');
  *
  * - Create sprites correctly, including correct css content and images files.
  * - Retina support are work well. @2x and _2x are all work well.
- * - Wrong option will alert you.
+ * - Wrong option will alert you.(not yet)
  * - `nameSpace`  option should work.
  * - `smartUpdate` option should work.
  * - `outputDimensions` option should work.
- * - `logLevel` option should work.
+ * - `logLevel` option should work.(not yet)
  * - In @lazysprite atrule value, single quotes (') and double quotes (") are both support.(not need)
  */
 
@@ -111,7 +111,7 @@ describe('postcss-lazysprite Unit Test', function () {
 		});
 	});
 
-	describe('postcss-lazysprite Unit Test: Options Functions', function () {
+	describe('Options Functions', function () {
 		before(function (done) {
 			fs.mkdir('./test/dist', function (err) {
 				done();
