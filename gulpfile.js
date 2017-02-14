@@ -6,7 +6,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var perfectionist = require('perfectionist');
 
 var files = ['index.js'];
-var watchFiles = ['index.js', 'gulpfile.js', 'demo/src/**/**'];
+var watchFiles = ['index.js', 'gulpfile.js', 'demo/src/**/**', 'test/src/**/**'];
 
 gulp.task('lint', function () {
 	var eslint = require('gulp-eslint');
@@ -24,6 +24,11 @@ gulp.task('demo', function () {
 gulp.task('htmlcopy', function () {
 	return gulp.src(['./demo/src/html/index.html'], {base: './demo/src/html/'})
 		.pipe(gulp.dest('./demo/dist/html/'));
+});
+
+gulp.task('test', function () {
+	return gulp.src('test/*.js', { read: false })
+		.pipe(mocha({ timeout: 1000000 }));
 });
 
 gulp.task('css', function () {

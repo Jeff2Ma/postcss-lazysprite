@@ -31,7 +31,7 @@
     "vinyl-fs": "^2.4.3"
   },
   "scripts": {
-    "test": "gulp css"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",

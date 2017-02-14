@@ -621,20 +621,18 @@ function areAllRetina(images) {
 function log(logLevel, level, content) {
 	var output = true;
 
-	// lv1 will be display whatever
-	if (level === 'lv2') {
-		switch (logLevel) {
-		case 'slient':
+	switch (logLevel) {
+	case 'slient':
+		output = false;
+		break;
+	case 'info':
+		if (level === 'lv2') {
 			output = false;
-			break;
-		case 'info':
-			output = false;
-			break;
-		default:
-			output = true;
 		}
+		break;
+	default:
+		output = true;
 	}
-
 	if (output) {
 		var data = Array.prototype.slice.call(content);
 		gutil.log.apply(false, data);
