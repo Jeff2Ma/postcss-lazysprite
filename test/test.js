@@ -4,7 +4,8 @@ var path = require('path');
 var vfs = require('vinyl-fs');
 var through2 = require('through2');
 var postcss = require('gulp-postcss');
-var noop = function () {};
+var noop = function () {
+};
 var lazysprite = require('../index.js');
 
 /**
@@ -20,159 +21,179 @@ var lazysprite = require('../index.js');
  * - In @lazysprite atrule value, single quotes (') and double quotes (") are both support.(not need)
  */
 
-describe('postcss-lazysprite Unit Test: Basic Functions', function() {
-	// delete dist dir before testing evertime.
-	beforeEach(function (done) {
-		fs.rmdir('./test/dist', function (err) {
-			done();
+describe('postcss-lazysprite Unit Test', function () {
+
+	describe('Basic Functions', function () {
+		// delete dist dir before testing evertime.
+
+		before(function (done) {
+			fs.mkdir('./test/dist', function (err) {
+				done();
+			});
+		});
+
+		afterEach(function (done) {
+			fs.rmdir('./test/dist', function (err) {
+				done();
+			});
+		});
+
+		it('Create sprites -> should create correct css content and images files.', function (done) {
+			vfs.src('./test/src/css/test.1.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					// fs.writeFileSync('./test/src/css/test.1.excepted.css', content, 'utf8');
+					var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.1.excepted.css'), {encoding: 'utf8'});
+					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype.png'));
+					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype@2x.png'));
+
+					cssExpected.should.be.equal(content);
+					spritesExists1.should.be.ok();
+					spritesExists2.should.be.ok();
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
+
+		it('Retina support -> should @2x and _2x are all work well.', function (done) {
+			vfs.src('./test/src/css/test.2.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.2.excepted.css'), {encoding: 'utf8'});
+					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo.png'));
+					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo@2x.png'));
+
+					// fs.writeFileSync('./test/src/css/test.2.excepted.css', content, 'utf8');
+					cssExpected.should.be.equal(content);
+					spritesExists1.should.be.ok();
+					spritesExists2.should.be.ok();
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
+
+		it('Multi `@lazysprite` atRule -> should work with multi `@lazysprite` atRule.', function (done) {
+
+			var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.4.excepted.css'), {encoding: 'utf8'});
+
+			vfs.src('./test/src/css/test.4.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					fs.writeFileSync('./test/src/css/test.4.excepted.css', content, 'utf8');
+					cssExpected.should.be.equal(content);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
 		});
 	});
 
-	it('Create sprites -> should create correct css content and images files.', function(done) {
+	describe('postcss-lazysprite Unit Test: Options Functions', function () {
+		before(function (done) {
+			fs.mkdir('./test/dist', function (err) {
+				done();
+			});
+		});
 
-		var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.1.excepted.css'), {encoding: 'utf8'});
-		var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype.png'));
-		var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype@2x.png'));
+		afterEach(function (done) {
+			fs.rmdir('./test/dist', function (err) {
+				done();
+			});
+		});
 
-		vfs.src('./test/src/css/test.1.css')
-			.pipe(postcss([lazysprite({
-				imagePath: './test/src/slice',
-				stylesheetPath: './test/dist/css',
-				spritePath: './test/dist/sprites',
-				smartUpdate: false,
-				logLevel: 'slient'  // 'debug','info','slient'
-			})]))
-			.pipe(through2.obj(function(file, enc, cb){
-				var content = file.contents.toString();
-				// fs.writeFileSync('./test/src/css/test.1.excepted.css', content, 'utf8');
-				cssExpected.should.be.equal(content);
-				spritesExists1.should.be.ok();
-				spritesExists2.should.be.ok();
-				cb();
-			}))
-			.on('data', noop)
-			.on('end', done);
-	});
+		after(function (done) {
+			fs.rmdir('./test/dist', function (err) {
+				done();
+			});
+		});
 
-	it('Retina support -> should @2x and _2x are all work well.', function(done) {
 
-		var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.2.excepted.css'), {encoding: 'utf8'});
-		var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo.png'));
-		var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo@2x.png'));
+		it('`nameSpace`  option -> should work well.', function (done) {
+			vfs.src('./test/src/css/test.1.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					nameSpace: 'ww_',
+					logLevel: 'slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					content.match(/ww_/g).length.should.equal(6);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
 
-		vfs.src('./test/src/css/test.2.css')
-			.pipe(postcss([lazysprite({
-				imagePath: './test/src/slice',
-				stylesheetPath: './test/dist/css',
-				spritePath: './test/dist/sprites',
-				smartUpdate: false,
-				logLevel: 'slient'  // 'debug','info','slient'
-			})]))
-			.pipe(through2.obj(function(file, enc, cb){
-				var content = file.contents.toString();
-				// fs.writeFileSync('./test/src/css/test.2.excepted.css', content, 'utf8');
-				cssExpected.should.be.equal(content);
-				spritesExists1.should.be.ok();
-				spritesExists2.should.be.ok();
-				cb();
-			}))
-			.on('data', noop)
-			.on('end', done);
-	});
+		it('`smartUpdate`  option -> should work well.', function (done) {
+			vfs.src('./test/src/css/test.1.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: true,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.3.excepted.css'), {encoding: 'utf8'});
+					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype.cbed5ca6a9.png'));
+					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype@2x.3f1f178013.png'));
 
-	it('Multi `@lazysprite` atRule -> should work with multi `@lazysprite` atRule.', function(done) {
+					// fs.writeFileSync('./test/src/css/test.3.excepted.css', content, 'utf8');
+					cssExpected.should.be.equal(content);
+					// spritesExists1.should.be.ok();
+					// spritesExists2.should.be.ok();
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
 
-		var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.4.excepted.css'), {encoding: 'utf8'});
-
-		vfs.src('./test/src/css/test.4.css')
-			.pipe(postcss([lazysprite({
-				imagePath: './test/src/slice',
-				stylesheetPath: './test/dist/css',
-				spritePath: './test/dist/sprites',
-				smartUpdate: false,
-				logLevel: 'slient'  // 'debug','info','slient'
-			})]))
-			.pipe(through2.obj(function(file, enc, cb){
-				var content = file.contents.toString();
-				fs.writeFileSync('./test/src/css/test.4.excepted.css', content, 'utf8');
-				cssExpected.should.be.equal(content);
-				cb();
-			}))
-			.on('data', noop)
-			.on('end', done);
-	});
-});
-
-describe('postcss-lazysprite Unit Test: Options Functions', function() {
-	// delete dist dir before testing evertime.
-	beforeEach(function (done) {
-		fs.rmdir('./test/dist', function (err) {
-			done();
+		it('`outputDimensions`  option -> should work well.', function (done) {
+			vfs.src('./test/src/css/test.3.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					outputDimensions: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					content.match(/width/g).length.should.equal(1);
+					content.match(/height/g).length.should.equal(1);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
 		});
 	});
 
-	it('`nameSpace`  option -> should work well.', function(done) {
-		vfs.src('./test/src/css/test.1.css')
-			.pipe(postcss([lazysprite({
-				imagePath: './test/src/slice',
-				stylesheetPath: './test/dist/css',
-				spritePath: './test/dist/sprites',
-				smartUpdate: false,
-				nameSpace: 'ww_',
-				logLevel: 'slient'
-			})]))
-			.pipe(through2.obj(function(file, enc, cb){
-				var content = file.contents.toString();
-				content.match(/ww_/g).length.should.equal(6);
-				cb();
-			}))
-			.on('data', noop)
-			.on('end', done);
-	});
-
-	it('`smartUpdate`  option -> should work well.', function(done) {
-
-		var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.3.excepted.css'), {encoding: 'utf8'});
-		var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype.cbed5ca6a9.png'));
-		var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/filetype@2x.3f1f178013.png'));
-
-		vfs.src('./test/src/css/test.1.css')
-			.pipe(postcss([lazysprite({
-				imagePath: './test/src/slice',
-				stylesheetPath: './test/dist/css',
-				spritePath: './test/dist/sprites',
-				smartUpdate: true,
-				logLevel: 'slient'  // 'debug','info','slient'
-			})]))
-			.pipe(through2.obj(function(file, enc, cb){
-				var content = file.contents.toString();
-				// fs.writeFileSync('./test/src/css/test.3.excepted.css', content, 'utf8');
-				cssExpected.should.be.equal(content);
-				// spritesExists1.should.be.ok();
-				// spritesExists2.should.be.ok();
-				cb();
-			}))
-			.on('data', noop)
-			.on('end', done);
-	});
-
-	it('`outputDimensions`  option -> should work well.', function(done) {
-		vfs.src('./test/src/css/test.3.css')
-			.pipe(postcss([lazysprite({
-				imagePath: './test/src/slice',
-				stylesheetPath: './test/dist/css',
-				spritePath: './test/dist/sprites',
-				smartUpdate: false,
-				outputDimensions: false,
-				logLevel: 'slient'  // 'debug','info','slient'
-			})]))
-			.pipe(through2.obj(function(file, enc, cb){
-				var content = file.contents.toString();
-				content.match(/width/g).length.should.equal(1);
-				content.match(/height/g).length.should.equal(1);
-				cb();
-			}))
-			.on('data', noop)
-			.on('end', done);
-	});
 });

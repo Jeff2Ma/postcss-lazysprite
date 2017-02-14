@@ -13,7 +13,7 @@ branches:
   # whitelist
   only:
     - master
-    - 1.0.x
+    - test
 
 # Do not build on tags (GitHub and BitBucket)
 skip_tags: true
@@ -36,6 +36,7 @@ install:
   - npm cache clean
   - npm i
   - npm install -g gulp
+  - npm install -g mocha
 
 # to run your custom scripts instead of automatic tests
 test_script:
@@ -43,7 +44,7 @@ test_script:
   - node --version && npm --version
   - npm i
   - pwd
-  - gulp css
+  - gulp test
 
 # Don't actually build.
 build: off
