@@ -26,5 +26,9 @@ h2 {
 	font-size: 16px;
 }
 
-/* single quotes (') and double quotes (") are both support*/
-@lazysprite 'logo';
+/**
+ * single quotes (') and double quotes (") are both support.
+ *
+ * lookup the #brach which will be rename as the block className.
+ */
+@lazysprite 'logo#branch';

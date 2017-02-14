@@ -48,7 +48,8 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
 		smartUpdate: options.smartUpdate || false,
-		logLevel: options.logLevel || 'info'  // 'debug','info','slient'
+		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
+		cssSeparator: options.cssSeparator || '__' // separator between block and element.
 	}, options);
 
 	// Option `imagePath` is required
@@ -114,7 +115,8 @@ function extractImages(css, options) {
 	css.walkAtRules('lazysprite', function (atRule) {
 		// Get the directory of images from atRule value
 		var params = space(atRule.params);
-		var sliceDir = getAtRuleValue(params);
+		var atRuleValue = getAtRuleValue(params);
+		var sliceDir = atRuleValue[0];
 
 		// Get absolute path of directory.
 		var imageDir = path.resolve(options.imagePath, sliceDir);
@@ -149,12 +151,17 @@ function extractImages(css, options) {
 			// .pop() to get the last element in array
 			image.dir = imageDir.split(path.sep).pop();
 			image.groups = [image.dir];
-			image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png');
+			image.selector = (atRuleValue[1] ? atRuleValue[1] : image.dir) + options.cssSeparator + getBaseName(image.name, '.png');
 
 			// For retina
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
-				image.selector = image.dir + '__icon-' + getBaseName(image.name, '.png', true);
+				image.selector = (atRuleValue[1] ? atRuleValue[1] : image.dir) + options.cssSeparator + getBaseName(image.name, '.png', true);
+			}
+
+			// Deal with :hover css class
+			if (filename.indexOf('Hover') > -1) {
+				image.selector = image.selector.replace('Hover', ':hover');
 			}
 
 			// Get absfolute path of image
@@ -203,7 +210,8 @@ function setTokens(images, options, css) {
 		css.walkAtRules('lazysprite', function (atRule) {
 			// Get the directory of images from atRule value
 			var params = space(atRule.params);
-			var sliceDir = getAtRuleValue(params);
+			var atRuleValue = getAtRuleValue(params);
+			var sliceDir = atRuleValue[0];
 			var sliceDirname = sliceDir.split(path.sep).pop();
 
 			var atRuleParent = atRule.parent;
@@ -524,8 +532,14 @@ function updateReferences(images, options, sprites, css) {
 // Get the value of Atrule and trim to string without quote.
 function getAtRuleValue(params) {
 	var value = params[0];
+	var array = [];
 	value = _.trim(value, '\'"()');
-	return value;
+	if (value.indexOf('#') > -1) {
+		value = value.split('#');
+		return value;
+	}
+	array.push(value);
+	return array;
 }
 
 // Get the base name of file.
@@ -544,6 +558,13 @@ function getBaseName(filepath, extname, retina) {
 	}
 	return basename;
 }
+
+// Set the class name.
+// In normal way: element == filebasename, block == dirname
+// function setSelector(nameSpace, block, element, hover, retina) {
+//
+//
+// }
 
 // Set the sprite file name form groups.
 function makeSpritePath(options, groups, groupHash) {
@@ -639,4 +660,10 @@ function log(logLevel, level, content) {
 		var data = Array.prototype.slice.call(content);
 		gutil.log.apply(false, data);
 	}
+}
+
+// log for debug
+function debug() {
+	var data = Array.prototype.slice.call(arguments);
+	gutil.log.apply(false, data);
 }

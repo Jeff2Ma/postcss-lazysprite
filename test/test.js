@@ -109,6 +109,25 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('data', noop)
 				.on('end', done);
 		});
+
+		it('Dynamic selector block name -> Dynamic selector block name', function (done) {
+
+			vfs.src('./test/src/css/test.5.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					content.match(/newBlockName/g).length.should.equal(4);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
 	});
 
 	describe('Options Functions', function () {
@@ -143,7 +162,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				})]))
 				.pipe(through2.obj(function (file, enc, cb) {
 					var content = file.contents.toString();
-					content.match(/ww_/g).length.should.equal(6);
+					content.match(/ww_/g).length.should.equal(4);
 					cb();
 				}))
 				.on('data', noop)

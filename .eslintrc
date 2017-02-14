@@ -6,10 +6,12 @@
 			"tab"
 		],
 		"one-var": ["error", { uninitialized: "always", initialized: "never" }],
-		"space-infix-ops": ["error", {"int32Hint": false}]
+		"space-infix-ops": ["error", {"int32Hint": false}],
+		"no-unused-vars": ["error", { "varsIgnorePattern": "debug" }]
 	},
 	"env": {
 		"mocha": true,
 		"node": true
 	}
+
 }

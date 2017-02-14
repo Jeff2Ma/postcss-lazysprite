@@ -1,36 +1,26 @@
-.filetype__icon-doc { background-image: url(../sprites/filetype.png); background-position: 0 0; width: 80px; height: 80px
+.filetype__doc { background-image: url(../sprites/filetype.png); background-position: 0 0; width: 80px; height: 80px
 }
-.filetype__icon-pdf { background-image: url(../sprites/filetype.png); background-position: -90px 0; width: 80px; height: 80px
-}
-.filetype__icon-ppt { background-image: url(../sprites/filetype.png); background-position: 0 -90px; width: 80px; height: 80px
+.filetype__pdf { background-image: url(../sprites/filetype.png); background-position: -90px 0; width: 80px; height: 80px
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 2dppx), only screen and (min-resolution: 192dpi) {
- .filetype__icon-doc { background-image: url(../sprites/filetype@2x.png); background-position: 0 0; background-size: 170px 170px
+ .filetype__doc { background-image: url(../sprites/filetype@2x.png); background-position: 0 0; background-size: 170px 80px
  }
- .filetype__icon-pdf { background-image: url(../sprites/filetype@2x.png); background-position: -90px 0; background-size: 170px 170px
- }
- .filetype__icon-ppt { background-image: url(../sprites/filetype@2x.png); background-position: 0 -90px; background-size: 170px 170px
+ .filetype__pdf { background-image: url(../sprites/filetype@2x.png); background-position: -90px 0; background-size: 170px 80px
  }
 }
-.logo__icon-QQMail { background-image: url(../sprites/logo.png); background-position: 0 0; width: 104px; height: 32px
+.logo__WeRead { background-image: url(../sprites/logo.png); background-position: 0 0; width: 104px; height: 32px
 }
-.logo__icon-WeRead { background-image: url(../sprites/logo.png); background-position: 0 -42px; width: 104px; height: 32px
-}
-.logo__icon-WeWork { background-image: url(../sprites/logo.png); background-position: -114px 0; width: 104px; height: 32px
+.logo__WeWork { background-image: url(../sprites/logo.png); background-position: 0 -42px; width: 104px; height: 32px
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 2dppx), only screen and (min-resolution: 192dpi) {
- .logo__icon-QQMail { background-image: url(../sprites/logo@2x.png); background-position: 0 0; background-size: 218px 74px
+ .logo__WeRead { background-image: url(../sprites/logo@2x.png); background-position: 0 0; background-size: 104px 74px
  }
- .logo__icon-WeRead { background-image: url(../sprites/logo@2x.png); background-position: 0 -42px; background-size: 218px 74px
- }
- .logo__icon-WeWork { background-image: url(../sprites/logo@2x.png); background-position: -114px 0; background-size: 218px 74px
+ .logo__WeWork { background-image: url(../sprites/logo@2x.png); background-position: 0 -42px; background-size: 104px 74px
  }
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 3), only screen and (min-resolution: 3dppx) {
- .logo__icon-QQMail { background-image: url(../sprites/logo@3x.png); background-position: 0 0; background-size: 218px 74px
+ .logo__WeRead { background-image: url(../sprites/logo@3x.png); background-position: 0 0; background-size: 104px 74px
  }
- .logo__icon-WeRead { background-image: url(../sprites/logo@3x.png); background-position: 0 -42px; background-size: 218px 74px
- }
- .logo__icon-WeWork { background-image: url(../sprites/logo@3x.png); background-position: -114px 0; background-size: 218px 74px
+ .logo__WeWork { background-image: url(../sprites/logo@3x.png); background-position: 0 -42px; background-size: 104px 74px
  }
 }
