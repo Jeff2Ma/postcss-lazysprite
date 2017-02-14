@@ -6,6 +6,7 @@ node_modules/
 npm-debug.log
 CHANGELOG.md
 test
+demo
 gulpfile.js
 .travis.yml
 appveyor.yml
