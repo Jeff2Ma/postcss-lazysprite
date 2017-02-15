@@ -6,7 +6,7 @@
 
 ### Config
 
-special config is no needed.
+special config is not needed.
 
 ### File tree
 
@@ -30,7 +30,7 @@ special config is no needed.
 
 ```css
 /* ./src/css/index.css */
-@lazysprite "filetype";
+@lazysprite "center";
 ```
 
 ### Output

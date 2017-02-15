@@ -110,7 +110,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('end', done);
 		});
 
-		it('Dynamic selector block name -> Dynamic selector block name', function (done) {
+		it('Dynamic selector block name -> should work well with dynamic selector block name.', function (done) {
 
 			vfs.src('./test/src/css/test.5.css')
 				.pipe(postcss([lazysprite({

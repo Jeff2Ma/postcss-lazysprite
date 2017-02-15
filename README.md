@@ -150,7 +150,7 @@ gulp.task('css', function () {
 
 #### nameSpace
 
-> NameSpace(Prefix) of the class name of each image. The `className` = `nameSpace` + `fileName`.
+> NameSpace(Prefix) of the class name of each image.
 
 - Default: null
 - Required: `false`
@@ -175,7 +175,7 @@ logLevel: "silent"
 
 #### cssSeparator
 
-> Separator between css selector's block and element. In this plugin. 'block' is equal to file dirname or dynamic ones, 'element' is the base name of file. Bettwen then there is a separator. 
+> Separator between css selector's 'block' and 'element'. In this plugin. 'block' is equal to file dirname or dynamic one, 'element' is the base name of file.
 
 - Default: `'__'`
 - Required: `false`
