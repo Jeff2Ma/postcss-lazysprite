@@ -9,6 +9,10 @@ Change log for postcss-lazysprite.
 
 - Add logLevel to control log output level.
 
+- Add support for dynamic class name `block` part.
+
+- Add support sprites with`:hover` condition.
+
 - Add more examples and tests.
 
 ## [0.1.4] - 2017-01-12

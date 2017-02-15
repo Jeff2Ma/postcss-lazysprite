@@ -555,11 +555,18 @@ function getBaseName(filepath, extname, retina) {
 }
 
 // Set the class name.
-// Also deal with `:hover` css class
+// Also deal with retina, `:hover` css class contexts.
 function setSelector(image, options, dynamicBlock, retina) {
 	dynamicBlock = dynamicBlock || false;
 	retina = retina || false;
-	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + getBaseName(image.name, '.png', retina);
+	var basename = path.basename(image.name, '.png');
+	if (retina) {
+		basename = _.trimEnd(basename, '@2x');
+		basename = _.trimEnd(basename, '@3x');
+		basename = _.trimEnd(basename, '_2x');
+		basename = _.trimEnd(basename, '_3x');
+	}
+	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
 	if (image.name.indexOf('Hover') > -1) {
 		selector = _.replace(selector, 'Hover', ':hover');
 	}

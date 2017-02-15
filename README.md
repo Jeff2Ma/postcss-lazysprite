@@ -74,7 +74,7 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
             └── pdf@2x.png
 ```
 
-More examples with different options: [smartUpdate](./examples/smartUpdate.md), [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md)
+More examples with different options: [smartUpdate](./examples/smartUpdate.md), [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md)
 
 ## Features
 
@@ -86,7 +86,7 @@ More examples with different options: [smartUpdate](./examples/smartUpdate.md), 
 
 - Cache way and good perfomance to run faster.
 
-- Support sprites with`:hover` condition([example]()).
+- Support sprites with`:hover` condition([example](./examples/hover.md)).
 
 ## Installation
 
@@ -177,7 +177,7 @@ logLevel: "silent"
 
 > Separator between css selector's block and element. In this plugin. 'block' is equal to file dirname or dynamic ones, 'element' is the base name of file. Bettwen then there is a separator. 
 
-- Default: `__`
+- Default: `'__'`
 - Required: `false`
 
 #### outputDimensions
