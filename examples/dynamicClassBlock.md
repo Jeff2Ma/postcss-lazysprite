@@ -2,7 +2,10 @@
 
 *******
 
-## Option `smartUpdate`
+## Option `dynamicClassBlock`
+
+>In the created class name (selector), the default 'block' in class(like BEM method) is the same as directory name (which also the `@lazysprite` atrule value). But you can dynamic it, just need to add `#new-class-block` to the `@lazysprite` atrule value.
+>
 
 ### Config
 
@@ -11,7 +14,6 @@ options = {
     imagePath:'./test/src/slice',
     stylesheetPath: './test/dist/css',
     spritePath: './test/dist/slice',
-    nameSpace:'icon-',
     smartUpdate: false
 };
 ```
@@ -19,21 +21,21 @@ options = {
 
 ```css
 /* ./src/css/index.css */
-@lazysprite "filetype";
+@lazysprite "filetype#my-diy-file";
 ```
 
 ### Output
 
 ```css
 /* ./dist/css/index.css */
-.icon-filetype__doc {
+.my-diy-file__doc {
     background-image: url(../sprites/filetype.png);
     background-position: 0 0;
     width: 80px;
     height: 80px;
 }
 
-.icon-filetype__pdf {
+.my-diy-file__pdf {
     background-image: url(../sprites/filetype.png);
     background-position: -90px 0;
     width: 80px;
@@ -41,13 +43,13 @@ options = {
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio:2), only screen and (-o-min-device-pixel-ratio:2/1), only screen and (min-device-pixel-ratio:2), only screen and (min-resolution:2dppx), only screen and (min-resolution:192dpi) {
-    .icon-filetype__doc {
+    .my-diy-filee__doc {
         background-image: url(../sprites/filetype@2x.png);
         background-position: 0 0;
         background-size: 170px 170px;
     }
 
-    .icon-filetype__pdf {
+    .my-diy-file__pdf {
         background-image: url(../sprites/filetype@2x.png);
         background-position: -90px 0;
         background-size: 170px 170px;

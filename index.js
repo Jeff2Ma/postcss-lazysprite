@@ -151,20 +151,15 @@ function extractImages(css, options) {
 			// .pop() to get the last element in array
 			image.dir = imageDir.split(path.sep).pop();
 			image.groups = [image.dir];
-			image.selector = (atRuleValue[1] ? atRuleValue[1] : image.dir) + options.cssSeparator + getBaseName(image.name, '.png');
+			image.selector = setSelector(image, options, atRuleValue[1]);
 
 			// For retina
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
-				image.selector = (atRuleValue[1] ? atRuleValue[1] : image.dir) + options.cssSeparator + getBaseName(image.name, '.png', true);
+				image.selector = setSelector(image, options, atRuleValue[1], true);
 			}
 
-			// Deal with :hover css class
-			if (filename.indexOf('Hover') > -1) {
-				image.selector = image.selector.replace('Hover', ':hover');
-			}
-
-			// Get absfolute path of image
+			// Get absolute path of image
 			image.path = path.resolve(imageDir, filename);
 
 			// Push image obj to array.
@@ -560,11 +555,16 @@ function getBaseName(filepath, extname, retina) {
 }
 
 // Set the class name.
-// In normal way: element == filebasename, block == dirname
-// function setSelector(nameSpace, block, element, hover, retina) {
-//
-//
-// }
+// Also deal with `:hover` css class
+function setSelector(image, options, dynamicBlock, retina) {
+	dynamicBlock = dynamicBlock || false;
+	retina = retina || false;
+	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + getBaseName(image.name, '.png', retina);
+	if (image.name.indexOf('Hover') > -1) {
+		selector = _.replace(selector, 'Hover', ':hover');
+	}
+	return selector;
+}
 
 // Set the sprite file name form groups.
 function makeSpritePath(options, groups, groupHash) {

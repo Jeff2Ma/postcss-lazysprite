@@ -86,6 +86,8 @@ More examples with different options: [smartUpdate](./examples/smartUpdate.md), 
 
 - Cache way and good perfomance to run faster.
 
+- Support sprites with`:hover` condition([example]()).
+
 ## Installation
 
 ```bash

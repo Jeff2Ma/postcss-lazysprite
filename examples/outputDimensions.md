@@ -11,6 +11,7 @@ options = {
     imagePath:'./test/src/slice',
     stylesheetPath: './test/dist/css',
     spritePath: './test/dist/slice',
+    nameSpace:'icon-',
     smartUpdate: false,
     outputDimensions: false
 };
