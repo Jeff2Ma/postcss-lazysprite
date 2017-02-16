@@ -28,6 +28,7 @@ options = {
 
 ```css
 /* ./dist/css/index.css */
+/* if not dynamic to `#my-diy-file`, it will be `.filetype__doc` */
 .my-diy-file__doc {
     background-image: url(../sprites/filetype.png);
     background-position: 0 0;

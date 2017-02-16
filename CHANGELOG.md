@@ -1,7 +1,7 @@
 
 # Change Log
 
-Change log for postcss-lazysprite.
+Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
 ## [1.0.0] - 2017-02-12
 

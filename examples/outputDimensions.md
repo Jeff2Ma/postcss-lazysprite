@@ -30,6 +30,7 @@ options = {
 .icon-filetype__doc {
     background-image: url(../sprites/filetype.png);
     background-position: 0 0;
+    /* `width` & `height` properties are gone. */
 }
 
 .icon-filetype__pdf {

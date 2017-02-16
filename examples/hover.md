@@ -6,9 +6,11 @@
 
 ### Config
 
-special config is not needed.
+special config is not needed.just make sure your images name are include `Hover` string.
 
 ### File tree
+
+> single image name should include `Hover`.
 
 ```
 .
@@ -44,6 +46,7 @@ special config is not needed.
     height: 25px;
 }
 
+/* well it work. */
 .center__wechat:hover {
     background-image: url(../sprites/center.png);
     background-position: -70px -35px;

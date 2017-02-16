@@ -54,3 +54,10 @@ options = {
     }
 }
 ```
+
+### Result
+
+
+![smartUpdate](./src/img/smartUpdate.png)
+
+![smartUpdate](./src/img/smartUpdate2.png) 

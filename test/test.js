@@ -102,7 +102,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				})]))
 				.pipe(through2.obj(function (file, enc, cb) {
 					var content = file.contents.toString();
-					fs.writeFileSync('./test/src/css/test.4.excepted.css', content, 'utf8');
+					// fs.writeFileSync('./test/src/css/test.4.excepted.css', content, 'utf8');
 					cssExpected.should.be.equal(content);
 					cb();
 				}))
@@ -123,6 +123,25 @@ describe('postcss-lazysprite Unit Test', function () {
 				.pipe(through2.obj(function (file, enc, cb) {
 					var content = file.contents.toString();
 					content.match(/newBlockName/g).length.should.equal(4);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
+
+		it('`:hover` support -> should work with `Hover` in single image name.', function (done) {
+
+			vfs.src('./test/src/css/test.6.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					content.match(/:hover/g).length.should.equal(2);
 					cb();
 				}))
 				.on('data', noop)
