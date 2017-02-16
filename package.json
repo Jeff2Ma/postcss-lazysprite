@@ -1,6 +1,6 @@
 {
   "name": "postcss-lazysprite",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "description": "A PostCSS plugin that generates sprites from the directory of images automatically.",
   "main": "index.js",
   "directories": {
