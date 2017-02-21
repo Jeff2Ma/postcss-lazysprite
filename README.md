@@ -180,13 +180,6 @@ logLevel: "silent"
 - Default: `'__'`
 - Required: `false`
 
-#### retinaInfix
-
-> Deside the created sprite retina file is whether '@2x' or '_2x' as part of name.
-
-- Default: `@`
-- Required: `false`
-
 #### outputDimensions
 
 > Deside whether output `width` & `height` properties.

@@ -48,7 +48,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
 		smartUpdate: options.smartUpdate || false,
-		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__' // separator between block and element.
 	}, options);
@@ -107,6 +106,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 function extractImages(css, options) {
 	var images = [];
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
+	var oneTime = true;
 
 	if (!stylesheetPath) {
 		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
@@ -130,7 +130,7 @@ function extractImages(css, options) {
 
 		// Foreach the images and set image object.
 		var files = fs.readdirSync(imageDir);
-		files.forEach(function (filename) {
+		_.forEach(files, function (filename) {
 			// Have to be png file
 			var reg = /\.(png)\b/i;
 			if (!reg.test(filename)) {
@@ -158,6 +158,10 @@ function extractImages(css, options) {
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
 				image.selector = setSelector(image, options, atRuleValue[1], true);
+				if (oneTime) {
+					options.retinaInfix = getRetinaInfix(image.name);
+					oneTime = false;
+				}
 			}
 
 			// Get absolute path of image
@@ -637,6 +641,16 @@ function getRetinaRatio(url) {
 	}
 	var ratio = _.parseInt(matches[1]);
 	return ratio;
+}
+
+// Get retina infix from file name
+function getRetinaInfix(name) {
+	var matches = /([@_])[0-9]x\.[a-z]{3,4}$/gi.exec(name);
+	// debug(matches);
+	if (!matches) {
+		return '@';
+	}
+	return matches[1];
 }
 
 // Check whether all images are retina. should both with 1x and 2x
