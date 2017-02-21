@@ -48,6 +48,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
 		smartUpdate: options.smartUpdate || false,
+		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__' // separator between block and element.
 	}, options);
@@ -582,7 +583,7 @@ function makeSpritePath(options, groups, groupHash) {
 	} else {
 		file = path.resolve(base, groups.join('.') + '.png');
 	}
-	return file.replace('.@', '@');
+	return file.replace('.@', options.retinaInfix);
 }
 
 // Mask function
