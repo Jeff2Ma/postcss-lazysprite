@@ -48,6 +48,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
 		smartUpdate: options.smartUpdate || false,
+		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__' // separator between block and element.
 	}, options);
@@ -106,7 +107,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 function extractImages(css, options) {
 	var images = [];
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
-	var oneTime = true;
 
 	if (!stylesheetPath) {
 		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
@@ -158,10 +158,6 @@ function extractImages(css, options) {
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
 				image.selector = setSelector(image, options, atRuleValue[1], true);
-				if (oneTime) {
-					options.retinaInfix = getRetinaInfix(image.name);
-					oneTime = false;
-				}
 			}
 
 			// Get absolute path of image
@@ -230,7 +226,7 @@ function setTokens(images, options, css) {
 						text: image.path,
 						raws: {
 							before: ' ',
-							// before: '\n    ', // Use this to control indent but no work well
+							// before: '\n    ', // Use this to control indent but not work well
 							left: '@replace|',
 							right: ''
 						}

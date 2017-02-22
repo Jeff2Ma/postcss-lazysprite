@@ -88,27 +88,6 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('end', done);
 		});
 
-		it('Retina infix -> filename should as the same infix "@" or "_" as single slice image.', function (done) {
-			vfs.src('./test/src/css/test.7.css')
-				.pipe(postcss([lazysprite({
-					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
-					spritePath: './test/dist/sprites',
-					smartUpdate: false,
-					logLevel: 'slient'  // 'debug','info','slient'
-				})]))
-				.pipe(through2.obj(function (file, enc, cb) {
-					// var content = file.contents.toString();
-					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/check.png'));
-					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/check_2x.png'));
-					spritesExists1.should.be.ok();
-					spritesExists2.should.be.ok();
-					cb();
-				}))
-				.on('data', noop)
-				.on('end', done);
-		});
-
 		it('Multi `@lazysprite` atRule -> should work with multi `@lazysprite` atRule.', function (done) {
 
 			var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.4.excepted.css'), {encoding: 'utf8'});
@@ -248,6 +227,28 @@ describe('postcss-lazysprite Unit Test', function () {
 					var content = file.contents.toString();
 					content.match(/width/g).length.should.equal(1);
 					content.match(/height/g).length.should.equal(1);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
+
+		it('`retinaInfix` opiton-> should work well.', function (done) {
+			vfs.src('./test/src/css/test.7.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					retinaInfix: '_',
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					// var content = file.contents.toString();
+					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/check.png'));
+					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/check_2x.png'));
+					spritesExists1.should.be.ok();
+					spritesExists2.should.be.ok();
 					cb();
 				}))
 				.on('data', noop)
