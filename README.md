@@ -191,7 +191,7 @@ logLevel: "silent"
 
 > Deside whether output extral css details, which list like:
 
-```
+```css
 .icon-filetype {
     display: inline-block;
     overflow: hidden;
@@ -199,6 +199,16 @@ logLevel: "silent"
     line-height: 0;
 }
 ```
+
+when set this option as `true`, the html sould like:
+
+```html
+<i class="icon-filetype icon-filetype__doc"></i>
+```
+
+- Default: `false`
+- Required: `false`
+
 
 #### outputDimensions
 
