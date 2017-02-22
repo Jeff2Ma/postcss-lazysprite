@@ -47,6 +47,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		padding: options.padding ? options.padding : 10,
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
+		outputExtralCSS: options.outputExtralCSS || false,
 		smartUpdate: options.smartUpdate || false,
 		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
@@ -217,6 +218,19 @@ function setTokens(images, options, css) {
 			// Tag flag
 			var has2x = false;
 			var has3x = false;
+
+			if (options.outputExtralCSS) {
+				var outputExtralCSSRule = postcss.rule({
+					selector: '.' + options.nameSpace + (atRuleValue[1] ? atRuleValue[1] : sliceDirname),
+					source: atRule.source
+				});
+
+				outputExtralCSSRule.append({prop: 'display', value: 'inline-block'});
+				outputExtralCSSRule.append({prop: 'overflow', value: 'hidden'});
+				outputExtralCSSRule.append({prop: 'font-size', value: '0'});
+				outputExtralCSSRule.append({prop: 'line-height', value: '0'});
+				atRuleParent.append(outputExtralCSSRule);
+			}
 
 			// Foreach every image object
 			_.forEach(images, function (image) {

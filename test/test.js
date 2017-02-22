@@ -254,6 +254,28 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('data', noop)
 				.on('end', done);
 		});
+
+		it('`outputExtralCSS` opiton-> should work well.', function (done) {
+			vfs.src('./test/src/css/test.1.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetPath: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					outputExtralCSS: true,
+					smartUpdate: false,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					content.match(/display: inline-block/g).length.should.equal(1);
+					content.match(/overflow: hidden/g).length.should.equal(1);
+					content.match(/font-size: 0/g).length.should.equal(1);
+					content.match(/line-height: 0/g).length.should.equal(1);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
 	});
 
 });

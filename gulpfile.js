@@ -38,6 +38,7 @@ gulp.task('css', function () {
 			imagePath: './examples/src/slice',
 			stylesheetPath: './examples/dist/css',
 			spritePath: './examples/dist/sprites',
+			outputExtralCSS: true,
 			smartUpdate: true,
 			nameSpace: 'icon-',
 			logLevel: 'debug'

@@ -187,6 +187,19 @@ logLevel: "silent"
 - Default: `@`
 - Required: `false`
 
+#### outputExtralCSS
+
+> Deside whether output extral css details, which list like:
+
+```
+.icon-filetype {
+    display: inline-block;
+    overflow: hidden;
+    font-size: 0;
+    line-height: 0;
+}
+```
+
 #### outputDimensions
 
 > Deside whether output `width` & `height` properties.
