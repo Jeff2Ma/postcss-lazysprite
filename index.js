@@ -210,7 +210,6 @@ function setTokens(images, options, css) {
 			var atRuleValue = getAtRuleValue(params);
 			var sliceDir = atRuleValue[0];
 			var sliceDirname = sliceDir.split(path.sep).pop();
-
 			var atRuleParent = atRule.parent;
 			var mediaAtRule2x = postcss.atRule({name: 'media', params: resolutions2x.join(', ')});
 			var mediaAtRule3x = postcss.atRule({name: 'media', params: resolutions3x.join(', ')});
@@ -229,7 +228,7 @@ function setTokens(images, options, css) {
 				outputExtralCSSRule.append({prop: 'overflow', value: 'hidden'});
 				outputExtralCSSRule.append({prop: 'font-size', value: '0'});
 				outputExtralCSSRule.append({prop: 'line-height', value: '0'});
-				atRuleParent.append(outputExtralCSSRule);
+				atRuleParent.insertBefore(atRule, outputExtralCSSRule);
 			}
 
 			// Foreach every image object
@@ -257,7 +256,7 @@ function setTokens(images, options, css) {
 					switch (image.ratio) {
 					// @1x
 					case 1:
-						atRuleParent.append(singleRule);
+						atRuleParent.insertBefore(atRule, singleRule);
 						break;
 					// @2x
 					case 2:
@@ -277,10 +276,10 @@ function setTokens(images, options, css) {
 
 			// @2x @3x media rule are last.
 			if (has2x) {
-				atRuleParent.append(mediaAtRule2x);
+				atRuleParent.insertBefore(atRule, mediaAtRule2x);
 			}
 			if (has3x) {
-				atRuleParent.append(mediaAtRule3x);
+				atRuleParent.insertBefore(atRule, mediaAtRule3x);
 			}
 
 			atRule.remove();
