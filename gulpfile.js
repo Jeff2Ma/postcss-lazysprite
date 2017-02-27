@@ -40,6 +40,7 @@ gulp.task('css', function () {
 			spritePath: './examples/dist/sprites',
 			outputExtralCSS: true,
 			smartUpdate: true,
+			positionUnit: 'px', // px or percentage
 			nameSpace: 'icon-',
 			logLevel: 'debug'
 		}), perfectionist({
