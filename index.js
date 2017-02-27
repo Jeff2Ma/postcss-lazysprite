@@ -49,6 +49,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		outputDimensions: options.outputDimensions || true,
 		outputExtralCSS: options.outputExtralCSS || false,
 		smartUpdate: options.smartUpdate || false,
+		positionUnit: options.positionUnit || 'px', // 'px' or 'percentage'
 		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__' // separator between block and element.
@@ -494,10 +495,18 @@ function updateReferences(images, options, sprites, css) {
 						value: getBackgroundImageUrl(image)
 					});
 
-					backgroundPosition = postcss.decl({
-						prop: 'background-position',
-						value: getBackgroundPosition(image)
-					});
+					// Position unit
+					if (options.positionUnit === 'percentage') {
+						backgroundPosition = postcss.decl({
+							prop: 'background-position',
+							value: getBackgroundPositionInPercent(image)
+						});
+					} else {
+						backgroundPosition = postcss.decl({
+							prop: 'background-position',
+							value: getBackgroundPosition(image)
+						});
+					}
 
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
@@ -624,6 +633,14 @@ function getBackgroundPosition(image) {
 	var x = -1 * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
 	var y = -1 * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
 	var template = _.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
+	return template({x: x, y: y});
+}
+
+// Return the pencentage value for background-position property
+function getBackgroundPositionInPercent(image) {
+	var x = 100 * (image.coordinates.x) / (image.properties.width - image.coordinates.width);
+	var y = 100 * (image.coordinates.y) / (image.properties.height - image.coordinates.height);
+	var template = _.template('<%= (x ? x + "%" : x) %> <%= (y ? y + "%" : y) %>');
 	return template({x: x, y: y});
 }
 
