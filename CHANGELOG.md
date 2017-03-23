@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.1.0] - 2017-03-23
+
+- Add `pseudoClass` option for `:hover` and`:active` condition.
+
 ## [1.0.0] - 2017-02-12
 
 - Add smart update mod for high performance.
@@ -11,7 +15,7 @@ Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2M
 
 - Add support for dynamic class name `block` part.
 
-- Add support sprites with`:hover` condition.
+- Add support sprites with`:hover` and`:active` condition.
 
 - Add more examples and tests.
 

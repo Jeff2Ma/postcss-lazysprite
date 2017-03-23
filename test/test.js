@@ -137,6 +137,7 @@ describe('postcss-lazysprite Unit Test', function () {
 					stylesheetPath: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
+					pseudoClass: true,
 					logLevel: 'slient'  // 'debug','info','slient'
 				})]))
 				.pipe(through2.obj(function (file, enc, cb) {

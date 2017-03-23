@@ -2,15 +2,17 @@
 
 *******
 
-## `:hover` support.
+## `:hover`and `:active` support.
 
 ### Config
 
-special config is not needed.just make sure your images name are include `Hover` string.
+```javascript
+pseudoClass:true
+```
 
 ### File tree
 
-> single image name should include `Hover`.
+> single image name should include `Hover` or `Active`.
 
 ```
 .

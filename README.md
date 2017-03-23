@@ -86,7 +86,7 @@ More examples with different options: [smartUpdate](./examples/smartUpdate.md), 
 
 - Cache way and good perfomance to run faster.
 
-- Support sprites with`:hover` condition([example](./examples/hover.md)).
+- Support sprites with`:hover`、`:active` condition([example](./examples/pseudoClass.md)).
 
 ## Installation
 
@@ -216,6 +216,12 @@ when set this option as `true`, the html sould like:
 - Default: `false`
 - Required: `false`
 
+#### pseudoClass
+
+> If the file naming with `Hover`or `Active` as suffix，it will turn to   the `:hover` or `:active` pseudo class.([example](./examples/pseudoClass.md))
+
+- Default: `false`
+- Required: `false`
 
 #### outputDimensions
 

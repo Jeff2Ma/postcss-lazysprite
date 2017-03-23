@@ -52,7 +52,8 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		positionUnit: options.positionUnit || 'px', // 'px' or 'percentage'
 		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
-		cssSeparator: options.cssSeparator || '__' // separator between block and element.
+		cssSeparator: options.cssSeparator || '__', // separator between block and element.
+		pseudoClass: options.pseudoClass || false
 	}, options);
 
 	// Option `imagePath` is required
@@ -590,8 +591,11 @@ function setSelector(image, options, dynamicBlock, retina) {
 		basename = _.trimEnd(basename, '_3x');
 	}
 	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
-	if (image.name.indexOf('Hover') > -1) {
-		selector = _.replace(selector, 'Hover', ':hover');
+	if (options.pseudoClass) {
+		if (image.name.indexOf('Hover') > -1 || image.name.indexOf('Active') > -1) {
+			selector = _.replace(selector, 'Hover', ':hover');
+			selector = _.replace(selector, 'Active', ':active');
+		}
 	}
 	return selector;
 }
