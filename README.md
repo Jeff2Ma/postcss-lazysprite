@@ -74,7 +74,7 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
             └── pdf@2x.png
 ```
 
-More examples with different options: [smartUpdate](./examples/smartUpdate.md), [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md)
+More examples with different options: [smartUpdate](./examples/smartUpdate.md), [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md), [pseudoClass](./examples/pseudoClass.md)
 
 ## Features
 
