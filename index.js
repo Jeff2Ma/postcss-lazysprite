@@ -425,6 +425,30 @@ function saveSprites(images, options, sprites) {
 						deferred.resolve(sprite);
 						return deferred.promise;
 					}
+
+					// After above the steps, new sprite file was created.
+					// Old sprite file have to be deleted.
+					var oldSriteFiles = fs.readdirSync(options.spritePath);
+					if (!isRetinaHashImage(sprite.path)) {
+						oldSriteFiles = _.filter(oldSriteFiles, function (o) {
+							return !isRetinaHashImage(o);
+						});
+					}
+
+					var spriteGroup = sprite.groups.join('.');
+					var spriteForIndex = spriteGroup.replace('.@', '@');
+
+					_.forEach(oldSriteFiles, function (filename) {
+						var fullname = path.join(options.spritePath, filename);
+						if (fs.statSync(fullname) && (fullname.indexOf(spriteForIndex) > -1)) {
+							fs.unlink(path.join(options.spritePath, filename), function (err) {
+								if (err) {
+									return console.error(err);
+								}
+								log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.red(path.join(options.spritePath, filename)), 'deleted.']);
+							});
+						}
+					});
 				}
 
 				// Save new file version
@@ -657,10 +681,22 @@ function getBackgroundSize(image) {
 	return template({x: x, y: y});
 }
 
+// Check whether is '.png' file.
+function isPNG(url) {
+	return /.png$/gi.test(url);
+}
+
 // Check whether the image is retina,
 // Both `@2x` and `_2x` are support.
 function isRetinaImage(url) {
 	return /[@_](\d)x\.[a-z]{3,4}$/gi.test(url);
+}
+
+// Check whether the image is retina,
+// work with hashed naming filename,
+// eg. `@2x.578cc898ef.png`, `_3x.bc11f5103f.png`
+function isRetinaHashImage(url) {
+	return /[@_](\d)x\.[a-z0-9]{6,10}\.[a-z]{3,4}$/gi.test(url);
 }
 
 // Return the value of retina ratio.

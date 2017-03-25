@@ -7,7 +7,7 @@
 		],
 		"one-var": ["error", { uninitialized: "always", initialized: "never" }],
 		"space-infix-ops": ["error", {"int32Hint": false}],
-		"no-unused-vars": ["error", { "varsIgnorePattern": "[debugetBaseName]" }]
+		"no-unused-vars": ["error", { "varsIgnorePattern": "[debugetBaseNameisPNG]" }]
 	},
 	"env": {
 		"mocha": true,
