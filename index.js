@@ -438,7 +438,7 @@ function saveSprites(images, options, sprites) {
 					}
 
 					var spriteGroup = sprite.groups.join('.');
-					var spriteForIndex = spriteGroup.replace('.@', '@');
+					var spriteForIndex = spriteGroup.replace('.@', options.retinaInfix);
 
 					// Delete old files.
 					_.forEach(oldSriteFiles, function (filename) {
