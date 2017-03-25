@@ -3,6 +3,12 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.2.0] - 2017-03-27
+
+- Support deleting old sprites when with `smartUpdate` option.
+
+- Change absolute path to relative path in output log.
+
 ## [1.1.0] - 2017-03-23
 
 - Add `pseudoClass` option for `:hover` and`:active` condition.

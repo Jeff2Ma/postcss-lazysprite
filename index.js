@@ -428,6 +428,9 @@ function saveSprites(images, options, sprites) {
 					// After the above steps, new sprite file was created,
 					// Old sprite file has to be deleted.
 					var oldSriteFiles = fs.readdirSync(options.spritePath);
+
+					// If it is not retina sprite,
+					// The single one of sprite should the same.
 					if (!isRetinaHashImage(sprite.path)) {
 						oldSriteFiles = _.filter(oldSriteFiles, function (o) {
 							return !isRetinaHashImage(o);
@@ -437,6 +440,7 @@ function saveSprites(images, options, sprites) {
 					var spriteGroup = sprite.groups.join('.');
 					var spriteForIndex = spriteGroup.replace('.@', '@');
 
+					// Delete old files.
 					_.forEach(oldSriteFiles, function (filename) {
 						var fullname = path.join(options.spritePath, filename);
 						if (fs.statSync(fullname) && (fullname.indexOf(spriteForIndex) > -1)) {
