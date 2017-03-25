@@ -410,7 +410,7 @@ function saveSprites(images, options, sprites) {
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'unchanged.']);
+					log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -420,14 +420,13 @@ function saveSprites(images, options, sprites) {
 					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(sprite.path), 'already' +
-						' existed.']);
+						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
 						deferred.resolve(sprite);
 						return deferred.promise;
 					}
 
-					// After above the steps, new sprite file was created.
-					// Old sprite file have to be deleted.
+					// After the above steps, new sprite file was created,
+					// Old sprite file has to be deleted.
 					var oldSriteFiles = fs.readdirSync(options.spritePath);
 					if (!isRetinaHashImage(sprite.path)) {
 						oldSriteFiles = _.filter(oldSriteFiles, function (o) {
@@ -445,7 +444,7 @@ function saveSprites(images, options, sprites) {
 								if (err) {
 									return console.error(err);
 								}
-								log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.red(path.join(options.spritePath, filename)), 'deleted.']);
+								log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
 							});
 						}
 					});
@@ -454,7 +453,7 @@ function saveSprites(images, options, sprites) {
 				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
-						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.green(sprite.path), 'generated.']);
+						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
 						return sprite;
 					});
 			})
