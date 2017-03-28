@@ -58,7 +58,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 
 	// Option `imagePath` is required
 	if (!options.imagePath) {
-		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `imagePath` is undefined!' +
+		throw log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red('Option `imagePath` is undefined!' +
 			' Please set it and restart.')]);
 	}
 
@@ -96,7 +96,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 				return updateReferences(images, options, sprites, css);
 			})
 			.catch(function (err) {
-				throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red(err.message)]);
+				throw log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red(err.message)]);
 			});
 	};
 });
@@ -112,7 +112,7 @@ function extractImages(css, options) {
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
-		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
+		log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
 	}
 
 	// Find @lazysprite string from css
@@ -127,7 +127,7 @@ function extractImages(css, options) {
 
 		// check whether dir exist.
 		if (!fs.existsSync(imageDir)) {
-			log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
+			log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
 			return null;
 		}
 
@@ -410,7 +410,7 @@ function saveSprites(images, options, sprites) {
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
+					log(options.logLevel, 'lv3', ['LazySprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -420,7 +420,7 @@ function saveSprites(images, options, sprites) {
 					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
+						log(options.logLevel, 'lv2', ['LazySprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
 						deferred.resolve(sprite);
 						return deferred.promise;
 					}
@@ -448,7 +448,7 @@ function saveSprites(images, options, sprites) {
 								if (err) {
 									return console.error(err);
 								}
-								log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
+								log(options.logLevel, 'lv2', ['LazySprite:', gutil.colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
 							});
 						}
 					});
@@ -457,7 +457,7 @@ function saveSprites(images, options, sprites) {
 				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
-						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
+						log(options.logLevel, 'lv2', ['LazySprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
 						return sprite;
 					});
 			})
