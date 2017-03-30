@@ -3,6 +3,15 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+
+## [1.2.2] - 2017-03-31
+
+- Support for better css format result.
+
+## [1.2.1] - 2017-03-28
+
+- Change log output prefix.
+
 ## [1.2.0] - 2017-03-27
 
 - Support deleting old sprites when with `smartUpdate` option.
