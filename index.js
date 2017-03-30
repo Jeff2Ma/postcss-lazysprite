@@ -43,6 +43,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	options = options || {};
 
 	options = _.merge({
+		cloneRaws: options.cloneRaws || {},
 		groupBy: options.groupBy || [],
 		padding: options.padding ? options.padding : 10,
 		nameSpace: options.nameSpace || '',
@@ -58,7 +59,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 
 	// Option `imagePath` is required
 	if (!options.imagePath) {
-		throw log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red('Option `imagePath` is undefined!' +
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `imagePath` is undefined!' +
 			' Please set it and restart.')]);
 	}
 
@@ -96,7 +97,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 				return updateReferences(images, options, sprites, css);
 			})
 			.catch(function (err) {
-				throw log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red(err.message)]);
+				throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red(err.message)]);
 			});
 	};
 });
@@ -112,7 +113,7 @@ function extractImages(css, options) {
 	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
 
 	if (!stylesheetPath) {
-		log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
+		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
 	}
 
 	// Find @lazysprite string from css
@@ -125,10 +126,25 @@ function extractImages(css, options) {
 		// Get absolute path of directory.
 		var imageDir = path.resolve(options.imagePath, sliceDir);
 
-		// check whether dir exist.
+		// Check whether dir exist.
 		if (!fs.existsSync(imageDir)) {
-			log(options.logLevel, 'lv1', ['LazySprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
+			log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
 			return null;
+		}
+
+		// Get indent format of the css content.
+		var atRuleNext = atRule.parent.nodes;
+		var rawNode = _.find(atRuleNext, function (node) {
+			return node.type === 'rule';
+		});
+
+		// Store the indent format.
+		if (rawNode === undefined) {
+			options.cloneRaws.between = '';
+			options.cloneRaws.after = '';
+		} else {
+			options.cloneRaws.between = rawNode.raws.between;
+			options.cloneRaws.after = rawNode.raws.after;
 		}
 
 		// Foreach the images and set image object.
@@ -240,7 +256,9 @@ function setTokens(images, options, css) {
 					image.token = postcss.comment({
 						text: image.path,
 						raws: {
-							before: ' ',
+							// before: options.cloneRaws.before,
+							between: options.cloneRaws.between,
+							after: options.cloneRaws.after,
 							// before: '\n    ', // Use this to control indent but not work well
 							left: '@replace|',
 							right: ''
@@ -410,7 +428,7 @@ function saveSprites(images, options, sprites) {
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					log(options.logLevel, 'lv3', ['LazySprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
+					log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -420,7 +438,7 @@ function saveSprites(images, options, sprites) {
 					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv2', ['LazySprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
+						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
 						deferred.resolve(sprite);
 						return deferred.promise;
 					}
@@ -448,7 +466,7 @@ function saveSprites(images, options, sprites) {
 								if (err) {
 									return console.error(err);
 								}
-								log(options.logLevel, 'lv2', ['LazySprite:', gutil.colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
+								log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
 							});
 						}
 					});
@@ -457,7 +475,7 @@ function saveSprites(images, options, sprites) {
 				// Save new file version
 				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
 					.then(function () {
-						log(options.logLevel, 'lv2', ['LazySprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
+						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
 						return sprite;
 					});
 			})

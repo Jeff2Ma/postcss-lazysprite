@@ -1,16 +1,36 @@
-.logo__WeRead { background-image: url(../sprites/logo.png); background-position: 0 0; width: 104px; height: 32px
+.logo__WeRead {
+    background-image: url(../sprites/logo.png);
+    background-position: 0 0;
+    width: 104px;
+    height: 32px
 }
-.logo__WeWork { background-image: url(../sprites/logo.png); background-position: 0 -42px; width: 104px; height: 32px
+.logo__WeWork {
+    background-image: url(../sprites/logo.png);
+    background-position: 0 -42px;
+    width: 104px;
+    height: 32px
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 2dppx), only screen and (min-resolution: 192dpi) {
- .logo__WeRead { background-image: url(../sprites/logo@2x.png); background-position: 0 0; background-size: 104px 74px
- }
- .logo__WeWork { background-image: url(../sprites/logo@2x.png); background-position: 0 -42px; background-size: 104px 74px
- }
+    .logo__WeRead {
+        background-image: url(../sprites/logo@2x.png);
+        background-position: 0 0;
+        background-size: 104px 74px
+    }
+    .logo__WeWork {
+        background-image: url(../sprites/logo@2x.png);
+        background-position: 0 -42px;
+        background-size: 104px 74px
+    }
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 3), only screen and (min-resolution: 3dppx) {
- .logo__WeRead { background-image: url(../sprites/logo@3x.png); background-position: 0 0; background-size: 104px 74px
- }
- .logo__WeWork { background-image: url(../sprites/logo@3x.png); background-position: 0 -42px; background-size: 104px 74px
- }
+    .logo__WeRead {
+        background-image: url(../sprites/logo@3x.png);
+        background-position: 0 0;
+        background-size: 104px 74px
+    }
+    .logo__WeWork {
+        background-image: url(../sprites/logo@3x.png);
+        background-position: 0 -42px;
+        background-size: 104px 74px
+    }
 }

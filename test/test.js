@@ -74,6 +74,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				})]))
 				.pipe(through2.obj(function (file, enc, cb) {
 					var content = file.contents.toString();
+					// fs.writeFileSync('./test/src/css/test.2.excepted.css', content, 'utf8');
 					var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.2.excepted.css'), {encoding: 'utf8'});
 					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo.png'));
 					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo@2x.png'));
@@ -87,6 +88,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('data', noop)
 				.on('end', done);
 		});
+
 
 		it('Multi `@lazysprite` atRule -> should work with multi `@lazysprite` atRule.', function (done) {
 
@@ -129,7 +131,8 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('end', done);
 		});
 
-		it('`:hover` support -> should work with `Hover` in single image name.', function (done) {
+
+		it('`:hover` and `:active` support -> should work with `Hover` in single image name.', function (done) {
 
 			vfs.src('./test/src/css/test.6.css')
 				.pipe(postcss([lazysprite({
@@ -149,6 +152,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('end', done);
 		});
 	});
+
 
 	describe('Options Functions', function () {
 		before(function (done) {

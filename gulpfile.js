@@ -43,9 +43,10 @@ gulp.task('css', function () {
 			positionUnit: 'px', // px or percentage
 			nameSpace: 'icon-',
 			logLevel: 'debug'
-		}), perfectionist({
-			maxAtRuleLength: false
 		})]))
+		// }), perfectionist({
+		// 	maxAtRuleLength: false
+		// })]))
 		.pipe(sourcemaps.write("."))
 		.pipe(gulp.dest('./examples/dist/css'));
 });
