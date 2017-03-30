@@ -3,7 +3,6 @@ var postcss = require('gulp-postcss');
 var lazysprite = require('./index.js');
 var mocha = require('gulp-mocha');
 var sourcemaps = require('gulp-sourcemaps');
-var perfectionist = require('perfectionist');
 
 var files = ['index.js'];
 var watchFiles = ['index.js', 'gulpfile.js', 'examples/src/**/**', 'test/src/**/**'];
@@ -44,9 +43,6 @@ gulp.task('css', function () {
 			nameSpace: 'icon-',
 			logLevel: 'debug'
 		})]))
-		// }), perfectionist({
-		// 	maxAtRuleLength: false
-		// })]))
 		.pipe(sourcemaps.write("."))
 		.pipe(gulp.dest('./examples/dist/css'));
 });

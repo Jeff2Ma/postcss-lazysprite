@@ -31,7 +31,7 @@ var resolutions3x = [
 var GROUP_DELIMITER = '.';
 var GROUP_MASK = '*';
 
-// cache objects
+// Cache objects
 var cache = {};
 var cacheIndex = {};
 
@@ -51,9 +51,9 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		outputExtralCSS: options.outputExtralCSS || false,
 		smartUpdate: options.smartUpdate || false,
 		positionUnit: options.positionUnit || 'px', // 'px' or 'percentage'
-		retinaInfix: options.retinaInfix || '@', // decide '@2x' or '_2x'
+		retinaInfix: options.retinaInfix || '@', // Decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
-		cssSeparator: options.cssSeparator || '__', // separator between block and element.
+		cssSeparator: options.cssSeparator || '__', // Separator between block and element.
 		pseudoClass: options.pseudoClass || false
 	}, options);
 
@@ -256,16 +256,14 @@ function setTokens(images, options, css) {
 					image.token = postcss.comment({
 						text: image.path,
 						raws: {
-							// before: options.cloneRaws.before,
 							between: options.cloneRaws.between,
 							after: options.cloneRaws.after,
-							// before: '\n    ', // Use this to control indent but not work well
 							left: '@replace|',
 							right: ''
 						}
 					});
 
-					// add `source` argument for source map create.
+					// Add `source` argument for source map create.
 					var singleRule = postcss.rule({
 						selector: '.' + options.nameSpace + image.selector,
 						source: atRule.source
@@ -733,7 +731,6 @@ function getRetinaRatio(url) {
 // Get retina infix from file name
 function getRetinaInfix(name) {
 	var matches = /([@_])[0-9]x\.[a-z]{3,4}$/gi.exec(name);
-	// debug(matches);
 	if (!matches) {
 		return '@';
 	}
@@ -771,7 +768,7 @@ function log(logLevel, level, content) {
 	}
 }
 
-// log for debug
+// Log for debug
 function debug() {
 	var data = Array.prototype.slice.call(arguments);
 	gutil.log.apply(false, data);
