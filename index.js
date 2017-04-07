@@ -436,7 +436,7 @@ function saveSprites(images, options, sprites) {
 					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
 					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
+						log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
 						deferred.resolve(sprite);
 						return deferred.promise;
 					}
