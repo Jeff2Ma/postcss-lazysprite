@@ -3,6 +3,13 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.3.0] - 2017-04-21
+
+- Fix bug with basename like 'icon2'.
+
+## [1.2.3] - 2017-04-08
+
+- Change logLevel, 'already existed' info not show in slient logLevel.
 
 ## [1.2.2] - 2017-03-31
 
