@@ -604,23 +604,6 @@ function getAtRuleValue(params) {
 	return array;
 }
 
-// Get the base name of file.
-// Example1: demo.png/demo@2x.png/demo_2x.png ==> demo
-// Example2: demo.new.png/demo.new@2x.png  ==> demo.new
-// Note: 'extname' should like `.png`(also as default)
-function getBaseName(filepath, extname, retina) {
-	extname = extname || '.png';
-	retina = retina || false;
-	var basename = path.basename(filepath, extname);
-	if (retina) {
-		basename = _.trimEnd(basename, '@2x');
-		basename = _.trimEnd(basename, '@3x');
-		basename = _.trimEnd(basename, '_2x');
-		basename = _.trimEnd(basename, '_3x');
-	}
-	return basename;
-}
-
 // Set the class name.
 // Also deal with retina, `:hover` css class contexts.
 function setSelector(image, options, dynamicBlock, retina) {
@@ -628,10 +611,8 @@ function setSelector(image, options, dynamicBlock, retina) {
 	retina = retina || false;
 	var basename = path.basename(image.name, '.png');
 	if (retina) {
-		basename = _.trimEnd(basename, '@2x');
-		basename = _.trimEnd(basename, '@3x');
-		basename = _.trimEnd(basename, '_2x');
-		basename = _.trimEnd(basename, '_3x');
+		basename = _.replace(basename, options.retinaInfix + '2x', '');
+		basename = _.replace(basename, options.retinaInfix + '3x', '');
 	}
 	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
 	if (options.pseudoClass) {
