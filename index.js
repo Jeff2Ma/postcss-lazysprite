@@ -186,20 +186,9 @@ function extractImages(css, options) {
 				var sourceImgPathBaseName = path.basename(filename, '.png');
 				sourceImgPathBaseName = _.replace(sourceImgPathBaseName, /[@_](\d)x$/, '');
 				var sourceImgPath = path.resolve(imageDir, sourceImgPathBaseName + '.png');
-
-				// debug(sourceImgPath)
-				// fs.stat(sourceImgPath, function (err, stat) {
-				// 	if (err == null) {
-				// 		image.hasSourceImg = true;
-				// 	} else {
-				// 		image.hasSourceImg = false;
-				// 	}
-				// });
-
 				if (!fs.existsSync(sourceImgPath)){
 					image.hasSourceImg = false;
 				}
-
 			}
 
 			// Push image obj to array.
@@ -550,6 +539,23 @@ function updateReferences(images, options, sprites, css) {
 				// Match from the path with the tokens comments
 				image = _.find(images, {path: comment.text});
 				if (image) {
+
+					// 2x check even dimensions.
+					if (image.ratio == 2) {
+						if(image.coordinates['width'] % 2 !== 0 || image.coordinates['height'] % 2 !== 0){
+							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`2x` image should have' +
+							' even dimensions.']);
+						}
+					}
+
+					// 3x check dimensions.
+					if (image.ratio == 3) {
+						if(image.coordinates['width'] % 3 !== 0 || image.coordinates['height'] % 3 !== 0){
+							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`3x` image should have' +
+							' correct dimensions.']);
+						}
+					}
+
 					// Generate correct ref to the sprite
 					image.spriteRef = path.relative(image.stylesheetPath, image.spritePath);
 					image.spriteRef = image.spriteRef.split(path.sep).join('/');
