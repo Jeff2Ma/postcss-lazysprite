@@ -161,6 +161,7 @@ function extractImages(css, options) {
 				name: null, // Filename
 				stylesheetPath: stylesheetPath,
 				ratio: 1,
+				hasSourceImg: true, // Whether has 1px Source image
 				groups: [],
 				token: ''
 			};
@@ -173,14 +174,33 @@ function extractImages(css, options) {
 			image.groups = [image.dir];
 			image.selector = setSelector(image, options, atRuleValue[1]);
 
+			// Get absolute path of image
+			image.path = path.resolve(imageDir, filename);
+
 			// For retina
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
 				image.selector = setSelector(image, options, atRuleValue[1], true);
-			}
 
-			// Get absolute path of image
-			image.path = path.resolve(imageDir, filename);
+				// Check if has 1x image.
+				var sourceImgPathBaseName = path.basename(filename, '.png');
+				sourceImgPathBaseName = _.replace(sourceImgPathBaseName, /[@_](\d)x$/, '');
+				var sourceImgPath = path.resolve(imageDir, sourceImgPathBaseName + '.png');
+
+				// debug(sourceImgPath)
+				// fs.stat(sourceImgPath, function (err, stat) {
+				// 	if (err == null) {
+				// 		image.hasSourceImg = true;
+				// 	} else {
+				// 		image.hasSourceImg = false;
+				// 	}
+				// });
+
+				if (!fs.existsSync(sourceImgPath)){
+					image.hasSourceImg = false;
+				}
+
+			}
 
 			// Push image obj to array.
 			images.push(image);
@@ -557,13 +577,15 @@ function updateReferences(images, options, sprites, css) {
 
 					// Output the dimensions (only with 1x)
 					rule = backgroundImage.parent;
-					if (options.outputDimensions && image.ratio === 1) {
+					if (options.outputDimensions && (image.ratio === 1 || !image.hasSourceImg)) {
 						['height', 'width'].forEach(function (prop) {
 							rule.insertAfter(
 								backgroundImage,
 								postcss.decl({
 									prop: prop,
-									value: image.coordinates[prop] + 'px'
+									value: (image.ratio > 1 ?
+										image.coordinates[prop] / image.ratio :
+										image.coordinates[prop]) + 'px'
 								})
 							);
 						});
