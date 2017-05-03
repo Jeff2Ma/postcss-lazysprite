@@ -611,8 +611,8 @@ function setSelector(image, options, dynamicBlock, retina) {
 	retina = retina || false;
 	var basename = path.basename(image.name, '.png');
 	if (retina) {
-		basename = _.replace(basename, options.retinaInfix + '2x', '');
-		basename = _.replace(basename, options.retinaInfix + '3x', '');
+		// If retina, then '@2x','@3x','_2x','_3x' will be removed.
+		basename = _.replace(basename, /[@_](\d)x$/, '');
 	}
 	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
 	if (options.pseudoClass) {
