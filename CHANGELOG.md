@@ -3,6 +3,14 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.4.0] - 2017-05-08
+
+- Add support for PostCSS 6.0.
+
+- Add tip for incorrect 2x or 3x dimensions.
+
+- Fix bug with basename like 'icon2' in v1.3.0.
+
 ## [1.3.0] - 2017-04-21
 
 - Fix bug with basename like 'icon2'.

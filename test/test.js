@@ -151,7 +151,6 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('data', noop)
 				.on('end', done);
 		});
-
 	});
 
 
@@ -239,6 +238,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('end', done);
 		});
 
+
 		it('`retinaInfix` opiton-> should work well.', function (done) {
 			vfs.src('./test/src/css/test.7.css')
 				.pipe(postcss([lazysprite({
@@ -301,6 +301,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('data', noop)
 				.on('end', done);
 		});
+
 	});
 
 });
