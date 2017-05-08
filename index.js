@@ -255,7 +255,7 @@ function setTokens(images, options, css) {
 				outputExtralCSSRule.append({prop: 'overflow', value: 'hidden'});
 				outputExtralCSSRule.append({prop: 'font-size', value: '0'});
 				outputExtralCSSRule.append({prop: 'line-height', value: '0'});
-				atRuleParent.insertBefore(atRule, outputExtralCSSRule);
+				atRule.before(outputExtralCSSRule);
 			}
 
 			// Foreach every image object
@@ -580,12 +580,11 @@ function updateReferences(images, options, sprites, css) {
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
 
-					// Output the dimensions (only with 1x OR 2x when 1x not exist)
+					// Output the dimensions (only with 1x OR 2x when 1x not exists)
 					rule = backgroundImage.parent;
 					if (options.outputDimensions && (image.ratio === 1 || !image.hasSourceImg) && image.ratio !== 3) {
 						['height', 'width'].forEach(function (prop) {
-							rule.insertAfter(
-								backgroundImage,
+							backgroundImage.after(
 								postcss.decl({
 									prop: prop,
 									value: (image.ratio > 1 ?
@@ -596,7 +595,7 @@ function updateReferences(images, options, sprites, css) {
 						});
 					}
 
-					rule.insertAfter(backgroundImage, backgroundPosition);
+					backgroundImage.after(backgroundPosition);
 
 					if (image.ratio > 1) {
 						backgroundSize = postcss.decl({
@@ -604,7 +603,7 @@ function updateReferences(images, options, sprites, css) {
 							value: getBackgroundSize(image)
 						});
 
-						backgroundPosition.parent.insertAfter(backgroundPosition, backgroundSize);
+						backgroundPosition.after(backgroundSize);
 					}
 				}
 			}
