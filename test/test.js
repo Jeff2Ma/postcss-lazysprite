@@ -151,6 +151,7 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('data', noop)
 				.on('end', done);
 		});
+
 	});
 
 

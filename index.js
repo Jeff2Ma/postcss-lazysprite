@@ -161,6 +161,7 @@ function extractImages(css, options) {
 				name: null, // Filename
 				stylesheetPath: stylesheetPath,
 				ratio: 1,
+				hasSourceImg: true, // Whether has 1px Source image
 				groups: [],
 				token: ''
 			};
@@ -173,14 +174,22 @@ function extractImages(css, options) {
 			image.groups = [image.dir];
 			image.selector = setSelector(image, options, atRuleValue[1]);
 
+			// Get absolute path of image
+			image.path = path.resolve(imageDir, filename);
+
 			// For retina
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
 				image.selector = setSelector(image, options, atRuleValue[1], true);
-			}
 
-			// Get absolute path of image
-			image.path = path.resolve(imageDir, filename);
+				// Check if has 1x image.
+				var sourceImgPathBaseName = path.basename(filename, '.png');
+				sourceImgPathBaseName = _.replace(sourceImgPathBaseName, /[@_](\d)x$/, '');
+				var sourceImgPath = path.resolve(imageDir, sourceImgPathBaseName + '.png');
+				if (!fs.existsSync(sourceImgPath)) {
+					image.hasSourceImg = false;
+				}
+			}
 
 			// Push image obj to array.
 			images.push(image);
@@ -530,6 +539,22 @@ function updateReferences(images, options, sprites, css) {
 				// Match from the path with the tokens comments
 				image = _.find(images, {path: comment.text});
 				if (image) {
+					// 2x check even dimensions.
+					if (image.ratio === 2) {
+						if (image.coordinates.width % 2 !== 0 || image.coordinates.height % 2 !== 0) {
+							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`2x` image should have' +
+							' even dimensions.']);
+						}
+					}
+
+					// 3x check dimensions.
+					if (image.ratio === 3) {
+						if (image.coordinates.width % 3 !== 0 || image.coordinates.height % 3 !== 0) {
+							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`3x` image should have' +
+							' correct dimensions.']);
+						}
+					}
+
 					// Generate correct ref to the sprite
 					image.spriteRef = path.relative(image.stylesheetPath, image.spritePath);
 					image.spriteRef = image.spriteRef.split(path.sep).join('/');
@@ -557,13 +582,15 @@ function updateReferences(images, options, sprites, css) {
 
 					// Output the dimensions (only with 1x)
 					rule = backgroundImage.parent;
-					if (options.outputDimensions && image.ratio === 1) {
+					if (options.outputDimensions && (image.ratio === 1 || !image.hasSourceImg)) {
 						['height', 'width'].forEach(function (prop) {
 							rule.insertAfter(
 								backgroundImage,
 								postcss.decl({
 									prop: prop,
-									value: image.coordinates[prop] + 'px'
+									value: (image.ratio > 1 ?
+										image.coordinates[prop] / image.ratio :
+										image.coordinates[prop]) + 'px'
 								})
 							);
 						});
@@ -611,8 +638,8 @@ function setSelector(image, options, dynamicBlock, retina) {
 	retina = retina || false;
 	var basename = path.basename(image.name, '.png');
 	if (retina) {
-		basename = _.replace(basename, options.retinaInfix + '2x', '');
-		basename = _.replace(basename, options.retinaInfix + '3x', '');
+		// If retina, then '@2x','@3x','_2x','_3x' will be removed.
+		basename = _.replace(basename, /[@_](\d)x$/, '');
 	}
 	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
 	if (options.pseudoClass) {
