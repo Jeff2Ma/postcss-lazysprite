@@ -76,8 +76,8 @@ describe('postcss-lazysprite Unit Test', function () {
 					var content = file.contents.toString();
 					// fs.writeFileSync('./test/src/css/test.2.excepted.css', content, 'utf8');
 					var cssExpected = fs.readFileSync(path.resolve(process.cwd(), './test/src/css/test.2.excepted.css'), {encoding: 'utf8'});
-					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo.png'));
-					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo@2x.png'));
+					var spritesExists1 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo@2x.png'));
+					var spritesExists2 = fs.existsSync(path.resolve(process.cwd(), './test/dist/sprites/logo@3x.png'));
 
 					// fs.writeFileSync('./test/src/css/test.2.excepted.css', content, 'utf8');
 					cssExpected.should.be.equal(content);
