@@ -580,9 +580,9 @@ function updateReferences(images, options, sprites, css) {
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
 
-					// Output the dimensions (only with 1x)
+					// Output the dimensions (only with 1x OR 2x when 1x not exist)
 					rule = backgroundImage.parent;
-					if (options.outputDimensions && (image.ratio === 1 || !image.hasSourceImg)) {
+					if (options.outputDimensions && (image.ratio === 1 || !image.hasSourceImg) && image.ratio !== 3) {
 						['height', 'width'].forEach(function (prop) {
 							rule.insertAfter(
 								backgroundImage,
