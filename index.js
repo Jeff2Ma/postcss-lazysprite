@@ -561,19 +561,15 @@ function updateReferences(images, options, sprites, css) {
 				image = _.find(images, {path: comment.text});
 				if (image) {
 					// 2x check even dimensions.
-					if (image.ratio === 2) {
-						if (image.coordinates.width % 2 !== 0 || image.coordinates.height % 2 !== 0) {
-							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`2x` image should have' +
-							' even dimensions.']);
-						}
+					if (image.ratio === 2 && (image.coordinates.width % 2 !== 0 || image.coordinates.height % 2 !== 0)) {
+						throw log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`2x` image should have' +
+						' even dimensions.']);
 					}
 
 					// 3x check dimensions.
-					if (image.ratio === 3) {
-						if (image.coordinates.width % 3 !== 0 || image.coordinates.height % 3 !== 0) {
-							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`3x` image should have' +
-							' correct dimensions.']);
-						}
+					if (image.ratio === 3 && (image.coordinates.width % 3 !== 0 || image.coordinates.height % 3 !== 0)) {
+						throw log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`3x` image should have' +
+						' correct dimensions.']);
 					}
 
 					// Generate correct ref to the sprite
