@@ -42,7 +42,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.1.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					logLevel: 'slient'  // 'debug','info','slient'
@@ -67,7 +68,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.2.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					logLevel: 'slient'  // 'debug','info','slient'
@@ -97,7 +99,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.4.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					logLevel: 'slient'  // 'debug','info','slient'
@@ -117,7 +120,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.5.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					logLevel: 'slient'  // 'debug','info','slient'
@@ -137,7 +141,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.6.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					pseudoClass: true,
@@ -146,6 +151,27 @@ describe('postcss-lazysprite Unit Test', function () {
 				.pipe(through2.obj(function (file, enc, cb) {
 					var content = file.contents.toString();
 					content.match(/:hover/g).length.should.equal(2);
+					cb();
+				}))
+				.on('data', noop)
+				.on('end', done);
+		});
+
+		it('Second depth directory css files -> should work well.', function (done) {
+
+			vfs.src('./test/src/css/second/test.8.css')
+				.pipe(postcss([lazysprite({
+					imagePath: './test/src/slice',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
+					spritePath: './test/dist/sprites',
+					smartUpdate: false,
+					pseudoClass: true,
+					logLevel: 'slient'  // 'debug','info','slient'
+				})]))
+				.pipe(through2.obj(function (file, enc, cb) {
+					var content = file.contents.toString();
+					content.match(/\.\.\/\.\.\/s/g).length.should.equal(4);
 					cb();
 				}))
 				.on('data', noop)
@@ -178,7 +204,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.1.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					nameSpace: 'ww_',
@@ -197,7 +224,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.1.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: true,
 					logLevel: 'slient'  // 'debug','info','slient'
@@ -222,7 +250,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.3.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					smartUpdate: false,
 					outputDimensions: false,
@@ -243,7 +272,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.7.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					retinaInfix: '_',
 					smartUpdate: false,
@@ -265,7 +295,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.1.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					outputExtralCSS: true,
 					smartUpdate: false,
@@ -287,7 +318,8 @@ describe('postcss-lazysprite Unit Test', function () {
 			vfs.src('./test/src/css/test.1.css')
 				.pipe(postcss([lazysprite({
 					imagePath: './test/src/slice',
-					stylesheetPath: './test/dist/css',
+					stylesheetInput: './test/src/css',
+					stylesheetRelative: './test/dist/css',
 					spritePath: './test/dist/sprites',
 					positionUnit: 'percentage',
 					smartUpdate: false,

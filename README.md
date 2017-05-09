@@ -106,10 +106,11 @@ var postcss = require('gulp-postcss');
 var lazysprite = require('postcss-lazysprite');
 
 gulp.task('css', function () {
-	return gulp.src('./test/src/css/*.css')
+	return gulp.src('./test/src/css/**/*.css')
 		.pipe(postcss([lazysprite({
 			imagePath:'./test/src/slice',
-			stylesheetPath: './test/dist/css',
+			stylesheetInput: './test/src/css',
+			stylesheetRelative: './test/dist/css',
 			spritePath: './test/dist/slice',
 			smartUpdate: true,
 			nameSpace: 'icon-'
@@ -127,7 +128,15 @@ gulp.task('css', function () {
 - Default: null
 - Required: `true`
 
-#### stylesheetPath
+
+#### stylesheetInput
+
+> The directory that store css(or scss/less) source files. If you are use gulp.js, simply the value of `gulp.src` without the part of `**` and so on.
+
+- Default: null
+- Required: `true`
+
+#### stylesheetRelative
 
 > Relative path to the folder that will keep your output stylesheet(s). If it's null the path of CSS file will be used.
 

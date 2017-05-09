@@ -31,11 +31,12 @@ gulp.task('test', function () {
 });
 
 gulp.task('css', function () {
-	return gulp.src('./examples/src/css/*.css')
-		.pipe(sourcemaps.init())
+	return gulp.src('./examples/src/css/**/*.css')
+		// .pipe(sourcemaps.init())
 		.pipe(postcss([lazysprite({
 			imagePath: './examples/src/slice',
-			stylesheetPath: './examples/dist/css',
+			stylesheetInput: './examples/src/css',
+			stylesheetRelative: './examples/dist/css',
 			spritePath: './examples/dist/sprites',
 			outputExtralCSS: true,
 			smartUpdate: true,
@@ -43,7 +44,7 @@ gulp.task('css', function () {
 			nameSpace: 'icon-',
 			logLevel: 'debug'
 		})]))
-		.pipe(sourcemaps.write("."))
+		// .pipe(sourcemaps.write("."))
 		.pipe(gulp.dest('./examples/dist/css'));
 });
 

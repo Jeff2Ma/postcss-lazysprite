@@ -57,9 +57,22 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		pseudoClass: options.pseudoClass || false
 	}, options);
 
+	// Option `stylesheetPath` is deprecated,
+	// so has to give a tip for preview users.
+	if (options.stylesheetPath) {
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `stylesheetPath` was deprecated!' +
+			' Please use `stylesheetRelative` to replace.')]);
+	}
+
 	// Option `imagePath` is required
 	if (!options.imagePath) {
 		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `imagePath` is undefined!' +
+			' Please set it and restart.')]);
+	}
+
+	// Option `stylesheetInput` is required
+	if (!options.stylesheetInput) {
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `stylesheetInput` is undefined!' +
 			' Please set it and restart.')]);
 	}
 
@@ -110,10 +123,18 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
  */
 function extractImages(css, options) {
 	var images = [];
-	var stylesheetPath = options.stylesheetPath || path.dirname(css.source.input.file);
+	var stylesheetRelative = options.stylesheetRelative || path.dirname(css.source.input.file);
 
-	if (!stylesheetPath) {
-		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetPath` is undefined!')]);
+	if (!stylesheetRelative) {
+		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetRelative` is undefined!')]);
+	}
+
+	// When the css file is in the second or more depth level directory of destination
+	// which relative to `stylesheetRelative`,
+	// ref path in css will wrong, so has to be fix it.
+	if (css.source.input.file) {
+		var stylesheetInputDirRelative = path.relative(options.stylesheetInput, path.dirname(css.source.input.file));
+		stylesheetRelative = path.join(stylesheetRelative, stylesheetInputDirRelative);
 	}
 
 	// Find @lazysprite string from css
@@ -159,7 +180,7 @@ function extractImages(css, options) {
 			var image = {
 				path: null, // Absolute path
 				name: null, // Filename
-				stylesheetPath: stylesheetPath,
+				stylesheetRelative: stylesheetRelative,
 				ratio: 1,
 				hasSourceImg: true, // Whether has 1px Source image
 				groups: [],
@@ -556,7 +577,7 @@ function updateReferences(images, options, sprites, css) {
 					}
 
 					// Generate correct ref to the sprite
-					image.spriteRef = path.relative(image.stylesheetPath, image.spritePath);
+					image.spriteRef = path.relative(image.stylesheetRelative, image.spritePath);
 					image.spriteRef = image.spriteRef.split(path.sep).join('/');
 
 					backgroundImage = postcss.decl({
