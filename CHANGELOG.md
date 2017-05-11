@@ -3,15 +3,24 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
-## [1.5.0] - 2017-05-08
-
-- Add support for PostCSS 6.0.
+## [1.5.0] - 2017-05-11
 
 - Fix bug when with second or more depth directory css files.
 
 - Fix bug with basename like 'icon2' in v1.3.0.
 
-- Add tip for incorrect 2x or 3x dimensions.
+- Add support for PostCSS 6.0.
+
+- Add support for gulp-postcss 7.0.
+
+- Deprecated option `stylesheetPath` and repalce with `stylesheetRelative`.
+
+- Add option `stylesheetInput`. 
+
+- Add alert for incorrect `2x` or `3x` dimensions.
+
+> If you are going to upgrade from v1.3.x, please see [readme](README.md) to set option again. :)
+
 
 ## [1.3.0] - 2017-04-21
 
