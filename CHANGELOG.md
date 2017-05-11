@@ -19,6 +19,8 @@ Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2M
 
 - Add alert for incorrect `2x` or `3x` dimensions.
 
+- Add better dimensions stylesheet (`width`/`hegith` decls) output way.
+
 > If you are going to upgrade from v1.3.x, please see [readme](README.md) to set option again. :)
 
 
