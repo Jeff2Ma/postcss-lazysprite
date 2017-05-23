@@ -181,7 +181,6 @@ function extractImages(css, options) {
 				name: null, // Filename
 				stylesheetRelative: stylesheetRelative,
 				ratio: 1,
-				hasSourceImg: true, // Whether has 1px Source image
 				groups: [],
 				token: ''
 			};
@@ -201,14 +200,6 @@ function extractImages(css, options) {
 			if (isRetinaImage(image.name)) {
 				image.ratio = getRetinaRatio(image.name);
 				image.selector = setSelector(image, options, atRuleValue[1], true);
-
-				// Check if has 1x image.
-				var sourceImgPathBaseName = path.basename(filename, '.png');
-				sourceImgPathBaseName = _.replace(sourceImgPathBaseName, /[@_](\d)x$/, '');
-				var sourceImgPath = path.resolve(imageDir, sourceImgPathBaseName + '.png');
-				if (!fs.existsSync(sourceImgPath)) {
-					image.hasSourceImg = false;
-				}
 			}
 
 			// Push image obj to array.
@@ -590,9 +581,8 @@ function updateReferences(images, options, sprites, css) {
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
 
-					// Output the dimensions (only with 1x OR 2x when 1x not exists)
-					rule = backgroundImage.parent;
-					if (options.outputDimensions && (image.ratio === 1 || !image.hasSourceImg) && image.ratio !== 3) {
+					// Output the dimensions (only with 1x)
+					if (options.outputDimensions && image.ratio === 1) {
 						['height', 'width'].forEach(function (prop) {
 							backgroundImage.after(
 								postcss.decl({
