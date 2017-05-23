@@ -157,13 +157,6 @@ gulp.task('css', function () {
 - Default: `false`
 - Required: `false`
 
-#### positionUnit
-
-> The unit of the value in `background-position`. Default is `px` and your can set to percentage `%`.
-
-- Defalut: `px`
-- Required: `false`
-
 #### nameSpace
 
 > NameSpace(Prefix) of the class name of each image.

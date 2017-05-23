@@ -314,26 +314,6 @@ describe('postcss-lazysprite Unit Test', function () {
 				.on('end', done);
 		});
 
-		it('`positionUnit` opiton-> should work well.', function (done) {
-			vfs.src('./test/src/css/test.1.css')
-				.pipe(postcss([lazysprite({
-					imagePath: './test/src/slice',
-					stylesheetInput: './test/src/css',
-					stylesheetRelative: './test/dist/css',
-					spritePath: './test/dist/sprites',
-					positionUnit: 'percentage',
-					smartUpdate: false,
-					logLevel: 'slient'  // 'debug','info','slient'
-				})]))
-				.pipe(through2.obj(function (file, enc, cb) {
-					var content = file.contents.toString();
-					content.match(/%/g).length.should.equal(2);
-					cb();
-				}))
-				.on('data', noop)
-				.on('end', done);
-		});
-
 	});
 
 });

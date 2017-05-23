@@ -50,7 +50,6 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		outputDimensions: options.outputDimensions || true,
 		outputExtralCSS: options.outputExtralCSS || false,
 		smartUpdate: options.smartUpdate || false,
-		positionUnit: options.positionUnit || 'px', // 'px' or 'percentage'
 		retinaInfix: options.retinaInfix || '@', // Decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__', // Separator between block and element.
@@ -581,18 +580,12 @@ function updateReferences(images, options, sprites, css) {
 						value: getBackgroundImageUrl(image)
 					});
 
-					// Position unit
-					if (options.positionUnit === 'percentage') {
-						backgroundPosition = postcss.decl({
-							prop: 'background-position',
-							value: getBackgroundPositionInPercent(image)
-						});
-					} else {
-						backgroundPosition = postcss.decl({
-							prop: 'background-position',
-							value: getBackgroundPosition(image)
-						});
-					}
+
+					backgroundPosition = postcss.decl({
+						prop: 'background-position',
+						value: getBackgroundPosition(image)
+					});
+
 
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
