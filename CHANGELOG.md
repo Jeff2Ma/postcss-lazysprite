@@ -3,6 +3,12 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.6.0] - 2017-05-24
+
+- Remove `positionUnit` option.
+
+- Remove hasSourceImg obj.
+
 ## [1.5.0] - 2017-05-11
 
 - Fix bug when with second or more depth directory css files.
