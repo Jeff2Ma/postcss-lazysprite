@@ -571,12 +571,10 @@ function updateReferences(images, options, sprites, css) {
 						value: getBackgroundImageUrl(image)
 					});
 
-
 					backgroundPosition = postcss.decl({
 						prop: 'background-position',
 						value: getBackgroundPosition(image)
 					});
-
 
 					// Replace the comment and append necessary properties.
 					comment.replaceWith(backgroundImage);
@@ -642,9 +640,11 @@ function setSelector(image, options, dynamicBlock, retina) {
 	}
 	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
 	if (options.pseudoClass) {
-		if (image.name.indexOf('Hover') > -1 || image.name.indexOf('Active') > -1) {
+		if (image.name.toLowerCase().indexOf('hover') > -1 || image.name.toLowerCase().indexOf('active') > -1) {
 			selector = _.replace(selector, 'Hover', ':hover');
 			selector = _.replace(selector, 'Active', ':active');
+			selector = _.replace(selector, '_hover', ':hover');
+			selector = _.replace(selector, '_active', ':active');
 		}
 	}
 	return selector;

@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.6.2] - 2017-08-07
+
+- Update `pseudoClass` option.
+
 ## [1.6.1] - 2017-06-23
 
 - Update `rev-hash` to version 2.0.
