@@ -88,6 +88,15 @@ More examples with different options: [smartUpdate](./examples/smartUpdate.md), 
 
 - Support sprites with`:hover`、`:active` condition([example](./examples/pseudoClass.md)).
 
+## User
+
+[WeChat for Work](https://work.weixin.qq.com) and [Wechat Reader](https://weread.qq.com) are using `postcss-lazysprite` in production.
+
+<a href="https://work.weixin.qq.com"><img width="104" height="32" title="WeChat for Work" src="./examples/src/slice/logo/WeWork@2x.png" alt="WeChat for Work"></a>
+
+<a href="https://weread.qq.com"><img width="104" height="32" title="Wechat Reader" src="./examples/src/slice/logo/WeRead@2x.png" alt="Wechat Reader"></a>
+
+
 ## Installation
 
 ```bash
