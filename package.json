@@ -14,7 +14,7 @@
     "postcss": "^6.0.1",
     "rev-hash": "^2.0.0",
     "spark-md5": "^3.0.0",
-    "spritesmith": "^3.1.0"
+    "spritesmith": "^3.2.1"
   },
   "devDependencies": {
     "eslint": "^4.1.0",

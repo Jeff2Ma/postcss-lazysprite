@@ -8,3 +8,4 @@ dist/
 .git
 old
 tt.js
+*.lock
