@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.7.0] - 2017-11-14
+
+- Fix orders issue in mac and win's difference.
+
 ## [1.6.2] - 2017-08-07
 
 - Update `pseudoClass` option.
