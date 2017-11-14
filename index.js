@@ -169,6 +169,7 @@ function extractImages(css, options) {
 
 		// Foreach the images and set image object.
 		var files = fs.readdirSync(imageDir);
+		files = _.orderBy(files); // Fix orders issue in mac and win's difference.
 		_.forEach(files, function (filename) {
 			// Have to be png file
 			var reg = /\.(png)\b/i;
