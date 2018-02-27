@@ -8,6 +8,9 @@ var md5 = require('spark-md5').hash;
 var gutil = require('gulp-util');
 var revHash = require('rev-hash');
 var Promise = require('bluebird');
+var extract = require('png-chunks-extract');
+var encode = require('png-chunks-encode');
+var text = require('png-chunk-text');
 
 var space = postcss.list.space;
 Promise.promisifyAll(fs);
@@ -51,7 +54,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		outputExtralCSS: options.outputExtralCSS || false,
 		smartUpdate: options.smartUpdate || false,
 		retinaInfix: options.retinaInfix || '@', // Decide '@2x' or '_2x'
-		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
+		logLevel: options.logLevel || 'info', // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__', // Separator between block and element.
 		pseudoClass: options.pseudoClass || false
 	}, options);
@@ -442,8 +445,9 @@ function saveSprites(images, options, sprites) {
 		var all = _
 			.chain(sprites)
 			.map(function (sprite) {
-				sprite.path = makeSpritePath(options, sprite.groups, sprite.groupHash);
+				sprite.path = makeSpritePath(options, sprite.groups);
 				var deferred = Promise.pending();
+				var spritesBuffer = sprite.image;
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
@@ -454,14 +458,30 @@ function saveSprites(images, options, sprites) {
 
 				// If this sprites image file is exist. Only work when option `smartUpdate` is true.
 				if (options.smartUpdate) {
-					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
+					sprite.filename = sprite.groups.join('.') + '.png';
 					sprite.filename = sprite.filename.replace('.@', '@');
+
+					// 如果已经存在同名文件，检测下是否有 chunck 的png tEXt 信息（对比 group hash），如果有，则表明为最新的，不用重新去生成
 					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
-						deferred.resolve(sprite);
-						return deferred.promise;
+						var existedBuffer = fs.readFileSync(sprite.path);
+						var existedChunks = extract(existedBuffer);
+
+						var existedTextChunks = existedChunks.filter(function (chunk) {
+							return chunk.name === 'tEXt';
+						}).map(function (chunk) {
+							return text.decode(chunk.data);
+						});
+
+						console.log(existedTextChunks[0], sprite.groupHash);
+
+						if (existedTextChunks[0] && (existedTextChunks[0].keyword === 'hashinfo') && (existedTextChunks[0].text === sprite.groupHash)) {
+							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
+							deferred.resolve(sprite);
+							return deferred.promise;
+						}
 					}
 
+					/*
 					// After the above steps, new sprite file was created,
 					// Old sprite file has to be deleted.
 					var oldSprites = fs.readdirSync(options.spritePath);
@@ -489,10 +509,17 @@ function saveSprites(images, options, sprites) {
 							});
 						}
 					});
+					*/
+
+					// Save extral hash info to buffer (only in option `smartUpdate`)
+					var chunks = extract(sprite.image);
+					chunks.splice(-1, 0, text.encode('hashinfo', sprite.groupHash));
+					spritesBuffer = encode(chunks);
 				}
 
 				// Save new file version
-				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
+				// 根据是否有 smartUpdate 去进行更新
+				return fs.writeFileAsync(sprite.path, Buffer.from(spritesBuffer, 'binary'))
 					.then(function () {
 						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
 						return sprite;
@@ -652,14 +679,10 @@ function setSelector(image, options, dynamicBlock, retina) {
 }
 
 // Set the sprite file name form groups.
-function makeSpritePath(options, groups, groupHash) {
+function makeSpritePath(options, groups) {
 	var base = options.spritePath;
 	var file;
-	if (options.smartUpdate) {
-		file = path.resolve(base, groups.join('.') + '.' + groupHash + '.png');
-	} else {
-		file = path.resolve(base, groups.join('.') + '.png');
-	}
+	file = path.resolve(base, groups.join('.') + '.png');
 	return file.replace('.@', options.retinaInfix);
 }
 
