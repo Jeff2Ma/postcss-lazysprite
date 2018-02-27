@@ -5,12 +5,13 @@ var _ = require('lodash');
 var spritesmith = require('spritesmith').run;
 var mkdirp = require('mkdirp');
 var md5 = require('spark-md5').hash;
-var gutil = require('gulp-util');
 var revHash = require('rev-hash');
 var Promise = require('bluebird');
 var extract = require('png-chunks-extract');
 var encode = require('png-chunks-encode');
 var text = require('png-chunk-text');
+var colors = require('ansi-colors');
+var fancyLog = require('fancy-log');
 
 var space = postcss.list.space;
 Promise.promisifyAll(fs);
@@ -62,19 +63,19 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	// Option `stylesheetPath` is deprecated,
 	// so has to give a tip for preview users.
 	if (options.stylesheetPath) {
-		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `stylesheetPath` was deprecated!' +
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red('Option `stylesheetPath` was deprecated!' +
 			' Please use `stylesheetRelative` to replace.')]);
 	}
 
 	// Option `imagePath` is required
 	if (!options.imagePath) {
-		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `imagePath` is undefined!' +
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red('Option `imagePath` is undefined!' +
 			' Please set it and restart.')]);
 	}
 
 	// Option `stylesheetInput` is required
 	if (!options.stylesheetInput) {
-		throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('Option `stylesheetInput` is undefined!' +
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red('Option `stylesheetInput` is undefined!' +
 			' Please set it and restart.')]);
 	}
 
@@ -112,7 +113,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 				return updateReferences(images, options, sprites, css);
 			})
 			.catch(function (err) {
-				throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red(err.message)]);
+				throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red(err.message)]);
 			});
 	};
 });
@@ -128,7 +129,7 @@ function extractImages(css, options) {
 	var stylesheetRelative = options.stylesheetRelative || path.dirname(css.source.input.file);
 
 	if (!stylesheetRelative) {
-		log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('option `stylesheetRelative` is undefined!')]);
+		log(options.logLevel, 'lv1', ['Lazysprite:', colors.red('option `stylesheetRelative` is undefined!')]);
 	}
 
 	// When the css file is in the second or more depth level directory of destination
@@ -151,7 +152,7 @@ function extractImages(css, options) {
 
 		// Check whether dir exist.
 		if (!fs.existsSync(imageDir)) {
-			log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red('No exist "' + imageDir + '"')]);
+			log(options.logLevel, 'lv1', ['Lazysprite:', colors.red('No exist "' + imageDir + '"')]);
 			return null;
 		}
 
@@ -451,7 +452,7 @@ function saveSprites(images, options, sprites) {
 
 				// If this file is up to date
 				if (sprite.isFromCache) {
-					log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
+					log(options.logLevel, 'lv3', ['Lazysprite:', colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
 				}
@@ -472,10 +473,10 @@ function saveSprites(images, options, sprites) {
 							return text.decode(chunk.data);
 						});
 
-						console.log(existedTextChunks[0], sprite.groupHash);
+						log(options.logLevel, 'lv3', ['Lazysprite:', JSON.stringify(existedTextChunks[0]), sprite.groupHash]);
 
 						if (existedTextChunks[0] && (existedTextChunks[0].keyword === 'hashinfo') && (existedTextChunks[0].text === sprite.groupHash)) {
-							log(options.logLevel, 'lv3', ['Lazysprite:', gutil.colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
+							log(options.logLevel, 'lv3', ['Lazysprite:', colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
 							deferred.resolve(sprite);
 							return deferred.promise;
 						}
@@ -505,7 +506,7 @@ function saveSprites(images, options, sprites) {
 								if (err) {
 									return console.error(err);
 								}
-								log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
+								log(options.logLevel, 'lv2', ['Lazysprite:', colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
 							});
 						}
 					});
@@ -521,7 +522,7 @@ function saveSprites(images, options, sprites) {
 				// 根据是否有 smartUpdate 去进行更新
 				return fs.writeFileAsync(sprite.path, Buffer.from(spritesBuffer, 'binary'))
 					.then(function () {
-						log(options.logLevel, 'lv2', ['Lazysprite:', gutil.colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
+						log(options.logLevel, 'lv2', ['Lazysprite:', colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
 						return sprite;
 					});
 			})
@@ -580,13 +581,13 @@ function updateReferences(images, options, sprites, css) {
 				if (image) {
 					// 2x check even dimensions.
 					if (image.ratio === 2 && (image.coordinates.width % 2 !== 0 || image.coordinates.height % 2 !== 0)) {
-						throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`2x` image should have' +
+						throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red(path.relative(process.cwd(), image.path)), '`2x` image should have' +
 						' even dimensions.']);
 					}
 
 					// 3x check dimensions.
 					if (image.ratio === 3 && (image.coordinates.width % 3 !== 0 || image.coordinates.height % 3 !== 0)) {
-						throw log(options.logLevel, 'lv1', ['Lazysprite:', gutil.colors.red(path.relative(process.cwd(), image.path)), '`3x` image should have' +
+						throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red(path.relative(process.cwd(), image.path)), '`3x` image should have' +
 						' correct dimensions.']);
 					}
 
@@ -795,12 +796,12 @@ function log(logLevel, level, content) {
 	}
 	if (output) {
 		var data = Array.prototype.slice.call(content);
-		gutil.log.apply(false, data);
+		fancyLog.apply(false, data);
 	}
 }
 
 // Log for debug
 function debug() {
 	var data = Array.prototype.slice.call(arguments);
-	gutil.log.apply(false, data);
+	fancyLog.apply(false, data);
 }
