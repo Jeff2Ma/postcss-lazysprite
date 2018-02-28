@@ -52,7 +52,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		outputExtralCSS: options.outputExtralCSS || false,
 		smartUpdate: options.smartUpdate || false,
 		retinaInfix: options.retinaInfix || '@', // Decide '@2x' or '_2x'
-		logLevel: options.logLevel || 'info',  // 'debug','info','slient'
+		logLevel: options.logLevel || 'info', // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__', // Separator between block and element.
 		pseudoClass: options.pseudoClass || false
 	}, options);
@@ -493,7 +493,7 @@ function saveSprites(images, options, sprites) {
 				}
 
 				// Save new file version
-				return fs.writeFileAsync(sprite.path, new Buffer(sprite.image, 'binary'))
+				return fs.writeFileAsync(sprite.path, Buffer.from(sprite.image, 'binary'))
 					.then(function () {
 						log(options.logLevel, 'lv2', ['Lazysprite:', colors.green(path.relative(process.cwd(), sprite.path)), 'generated.']);
 						return sprite;
