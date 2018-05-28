@@ -6,7 +6,7 @@
 }
 .doc__pdf {
     background-image: url(../sprites/docs.svg);
-    background-position: -32px 0;
+    background-position: 0 0;
     width: 32px;
     height: 32px
 }
@@ -18,7 +18,7 @@
 }
 .doc__word {
     background-image: url(../sprites/docs.svg);
-    background-position: 0 0;
+    background-position: -32px 0;
     width: 32px;
     height: 32px
 }

@@ -381,6 +381,33 @@ function runSpriteSmith(images, options) {
 				return temp.join(GROUP_DELIMITER);
 			})
 			.map(function (images, temp) {
+				var config = _.merge({}, options, {
+					src: _.map(images, 'path')
+				});
+
+				var checkString = [];
+
+				_.each(config.src, function (image) {
+					var checkBuffer = fs.readFileSync(image);
+					var checkHash = revHash(checkBuffer);
+					checkString.push(checkHash);
+				});
+
+				// Get the group files hash so that next step can SmartUpdate.
+				checkString = md5(_.sortBy(checkString).join('&'));
+
+				// Collect images datechanged
+				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
+
+				// Get data from cache (avoid spritesmith)
+				if (cache[checkString]) {
+					var deferred = Promise.pending();
+					var results = cache[checkString];
+					results.isFromCache = true;
+					deferred.resolve(results);
+					return deferred.promise;
+				}
+
 				// SVG SPRITES MOD.
 				if (temp.indexOf('GROUP_SVG_FLAG') > -1) {
 					var svgConfig = _.defaultsDeep({src: _.map(images, 'path')}, options.svgsprite);
@@ -419,14 +446,20 @@ function runSpriteSmith(images, options) {
 						temp.shift();
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
+						var oldCheckString = cacheIndex[config.spriteName];
+						if (oldCheckString && cache[oldCheckString]) {
+							delete cache[oldCheckString];
+						}
+
+						// Cache - add brand new data
+						cacheIndex[config.spriteName] = checkString;
+						cache[checkString] = result;
 						return result;
 					});
 				}
 
 				// NORMAL MOD (spritesmith)
-				var config = _.merge({}, options, {
-					src: _.map(images, 'path')
-				});
+
 				var ratio;
 
 				// Enlarge padding when are retina images
@@ -440,29 +473,6 @@ function runSpriteSmith(images, options) {
 					if (ratio.length === 1) {
 						config.padding *= ratio[0];
 					}
-				}
-
-				var checkString = [];
-
-				_.each(config.src, function (image) {
-					var checkBuffer = fs.readFileSync(image);
-					var checkHash = revHash(checkBuffer);
-					checkString.push(checkHash);
-				});
-
-				// Get the group files hash so that next step can SmartUpdate.
-				checkString = md5(_.sortBy(checkString).join('&'));
-
-				// Collect images datechanged
-				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
-
-				// Get data from cache (avoid spritesmith)
-				if (cache[checkString]) {
-					var deferred = Promise.pending();
-					var results = cache[checkString];
-					results.isFromCache = true;
-					deferred.resolve(results);
-					return deferred.promise;
 				}
 
 				return Promise.promisify(spritesmith)(config)
