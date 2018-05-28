@@ -3,6 +3,18 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [1.8.2] - 2018-05-28
+
+- Dropped support for Node 4 and Node 5.
+
+- Update DevDependencies.
+
+## [1.8.0] - 2018-02-28
+
+- `new Buffer` -> `Buffer.from`.
+
+- Remove `gulp-util`.
+
 ## [1.7.0] - 2017-11-14
 
 - Fix orders issue in mac and win's difference.
@@ -33,7 +45,7 @@ Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2M
 
 - Deprecated option `stylesheetPath` and repalce with `stylesheetRelative`.
 
-- Add option `stylesheetInput`. 
+- Add option `stylesheetInput`.
 
 - Add alert for incorrect `2x` or `3x` dimensions.
 
