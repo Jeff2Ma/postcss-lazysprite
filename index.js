@@ -452,7 +452,6 @@ function runSpriteSmith(images, options) {
 
 				// Get the group files hash so that next step can SmartUpdate.
 				checkString = md5(_.sortBy(checkString).join('&'));
-				config.groupHash = checkString.slice(0, 10);
 
 				// Collect images datechanged
 				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
@@ -473,9 +472,6 @@ function runSpriteSmith(images, options) {
 
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
-
-						// Pass the group file hash for next `saveSprites` function.
-						result.groupHash = config.groupHash;
 
 						// Cache - clean old
 						var oldCheckString = cacheIndex[config.spriteName];
@@ -520,7 +516,7 @@ function saveSprites(images, options, sprites) {
 		var all = _
 			.chain(sprites)
 			.map(function (sprite) {
-				sprite.path = makeSpritePath(options, sprite.groups, sprite.groupHash);
+				sprite.path = makeSpritePath(options, sprite.groups);
 				var deferred = Promise.pending();
 
 				// If this file is up to date
@@ -528,45 +524,6 @@ function saveSprites(images, options, sprites) {
 					log(options.logLevel, 'lv3', ['Lazysprite:', colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
-				}
-
-				// If this sprites image file is exist. Only work when option `smartUpdate` is true.
-				if (options.smartUpdate) {
-					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
-					sprite.filename = sprite.filename.replace('.@', '@');
-					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv3', ['Lazysprite:', colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
-						deferred.resolve(sprite);
-						return deferred.promise;
-					}
-
-					// After the above steps, new sprite file was created,
-					// Old sprite file has to be deleted.
-					var oldSprites = fs.readdirSync(options.spritePath);
-
-					// If it is not retina sprite,
-					// The single one of sprite should the same.
-					if (!isRetinaHashImage(sprite.path)) {
-						oldSprites = _.filter(oldSprites, function (oldSprite) {
-							return !isRetinaHashImage(oldSprite);
-						});
-					}
-
-					var spriteGroup = sprite.groups.join('.');
-					var spriteForIndex = spriteGroup.replace('.@', options.retinaInfix);
-
-					// Delete old files.
-					_.forEach(oldSprites, function (filename) {
-						var fullname = path.join(options.spritePath, filename);
-						if (fs.statSync(fullname) && (fullname.indexOf(spriteForIndex) > -1)) {
-							fs.unlink(path.join(options.spritePath, filename), function (err) {
-								if (err) {
-									return console.error(err);
-								}
-								log(options.logLevel, 'lv2', ['Lazysprite:', colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
-							});
-						}
-					});
 				}
 
 				// Save new file version
@@ -728,7 +685,7 @@ function setSelector(image, options, dynamicBlock, retina) {
 }
 
 // Set the sprite file name form groups.
-function makeSpritePath(options, groups, groupHash) {
+function makeSpritePath(options, groups) {
 	var base = options.spritePath;
 	var file;
 
@@ -739,7 +696,7 @@ function makeSpritePath(options, groups, groupHash) {
 		});
 		file = path.resolve(base, groups.join('.') + '.svg');
 	} else {
-		file = path.resolve(base, groups.join('.') + (options.smartUpdate ? groupHash : '') + '.png');
+		file = path.resolve(base, groups.join('.') + '.png');
 	}
 
 	return file.replace('.@', options.retinaInfix);
