@@ -3,6 +3,14 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [2.0.0] - 2018-06-01
+
+- Support for SVG Sprites.
+
+- Remove `smartUpdate` option.
+
+- Update DevDependencies.
+
 ## [1.8.2] - 2018-05-28
 
 - Dropped support for Node 4 and Node 5.

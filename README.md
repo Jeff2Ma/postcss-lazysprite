@@ -24,32 +24,42 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
 
 ```CSS
 /* ./dist/css/index.css */
-.icon-filetype-doc {
-    background-image: url(../sprites/filetype.3f1f178013.png);
-    background-position: 0 0;
-    width: 80px;
-    height: 80px;
+.icon-filetype__excel {
+	background-image: url(../sprites/filetype.png);
+	background-position: 0 0;
+	width: 32px;
+	height: 32px;
 }
-
-.icon-filetype-pdf {
-    background-image: url(../sprites/filetype.3f1f178013.png);
-    background-position: -90px 0;
-    width: 80px;
-    height: 80px;
+.icon-filetype__pdf {
+	background-image: url(../sprites/filetype.svg);
+	background-position: 0 0;
+	width: 32px;
+	height: 32px;
+}
+.icon-filetype__ppt {
+	background-image: url(../sprites/filetype.png);
+	background-position: -32px 0;
+	width: 32px;
+	height: 32px;
+}
+.icon-filetype__word {
+	background-image: url(../sprites/filetype.svg);
+	background-position: -32px 0;
+	width: 32px;
+	height: 32px;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio:2), only screen and (-o-min-device-pixel-ratio:2/1), only screen and (min-device-pixel-ratio:2), only screen and (min-resolution:2dppx), only screen and (min-resolution:192dpi) {
-    .icon-filetype-doc {
-        background-image: url(../sprites/filetype@2x.cbed5ca6a9.png);
-        background-position: 0 0;
-        background-size: 170px 170px;
-    }
-
-    .icon-filetype-pdf {
-        background-image: url(../sprites/filetype@2x.cbed5ca6a9.png);
-        background-position: -90px 0;
-        background-size: 170px 170px;
-    }
+	.icon-filetype__excel {
+		background-image: url(../sprites/filetype@2x.png);
+		background-position: 0 0;
+		background-size: 64px 32px;
+	}
+	.icon-filetype__ppt {
+		background-image: url(../sprites/filetype@2x.png);
+		background-position: -32px 0;
+		background-size: 64px 32px;
+	}
 }
 ```
 
@@ -74,13 +84,15 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
             └── pdf@2x.png
 ```
 
-More examples with different options: [smartUpdate](./examples/smartUpdate.md), [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md), [pseudoClass](./examples/pseudoClass.md)
+More examples with different options: [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md), [pseudoClass](./examples/pseudoClass.md)
 
 ## Features
 
 - Simple and easy, just need to put your images to the special folder.
 
 - Retina support (`@2x`, `@3x`, `_2x`, `_3x` are all available).
+
+- Support SVG Sprites.
 
 - Fully work well with Source Map.
 
@@ -121,7 +133,6 @@ gulp.task('css', function () {
 			stylesheetInput: './test/src/css',
 			stylesheetRelative: './test/dist/css',
 			spritePath: './test/dist/slice',
-			smartUpdate: true,
 			nameSpace: 'icon-'
 		})]))
 		.pipe(gulp.dest('./test/dist/css'));
@@ -157,13 +168,6 @@ gulp.task('css', function () {
 > Relative path to the folder that will keep your output spritesheet(s).
 
 - Default: `./`
-- Required: `false`
-
-#### smartUpdate
-
-> Deside whether run `smartUpdate` mod.`smartUpdate` mod can create a hash for sprites files revving so that it can be updated when it is real need (like [compass spriting](http://compass-style.org/help/tutorials/spriting/) ). It is suggested to open so that to make sprites with hight performance. 
-
-- Default: `false`
 - Required: `false`
 
 #### nameSpace

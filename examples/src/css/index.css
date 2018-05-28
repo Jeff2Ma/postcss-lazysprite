@@ -5,6 +5,7 @@
 */
 
 /* relative to path where according to `stylesheetPath` option */
+/* both svg and png file are include */
 @lazysprite "filetype";
 
 body {

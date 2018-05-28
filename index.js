@@ -9,6 +9,7 @@ var revHash = require('rev-hash');
 var Promise = require('bluebird');
 var colors = require('ansi-colors');
 var fancyLog = require('fancy-log');
+var SVGSpriter = require('svg-sprite');
 
 var space = postcss.list.space;
 Promise.promisifyAll(fs);
@@ -31,6 +32,29 @@ var resolutions3x = [
 
 var GROUP_DELIMITER = '.';
 var GROUP_MASK = '*';
+var GROUP_SVG_FLAG = '@svgGroup';
+
+var SVG_CONFIG = {
+	mode: {
+		css: {
+			dimensions: true,
+			bust: false,
+			render: {
+				css: true
+			}
+		}
+	},
+	shape: {
+		id: {
+			generator: function (name, file) {
+				return Buffer.from(file.path).toString('base64');
+			}
+		}
+	},
+	svg: {
+		precision: 5
+	}
+};
 
 // Cache objects
 var cache = {};
@@ -87,6 +111,9 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		}
 		return null;
 	});
+
+	// Svg sprite config
+	options.svgsprite = SVG_CONFIG;
 
 	// Processer
 	return function (css) {
@@ -173,7 +200,7 @@ function extractImages(css, options) {
 		files = _.orderBy(files); // Fix orders issue in mac and win's difference.
 		_.forEach(files, function (filename) {
 			// Have to be png file
-			var reg = /\.(png)\b/i;
+			var reg = /\.(png|svg)\b/i;
 			if (!reg.test(filename)) {
 				return null;
 			}
@@ -184,6 +211,7 @@ function extractImages(css, options) {
 				stylesheetRelative: stylesheetRelative,
 				ratio: 1,
 				groups: [],
+				isSVG: false,
 				token: ''
 			};
 
@@ -193,6 +221,13 @@ function extractImages(css, options) {
 			// .pop() to get the last element in array
 			image.dir = imageDir.split(path.sep).pop();
 			image.groups = [image.dir];
+
+			// For svg file
+			if (/^\.svg/.test(path.extname(filename))) {
+				image.isSVG = true;
+				image.groups.push('GROUP_SVG_FLAG');
+			}
+
 			image.selector = setSelector(image, options, atRuleValue[1]);
 
 			// Get absolute path of image
@@ -208,7 +243,6 @@ function extractImages(css, options) {
 			images.push(image);
 		});
 	});
-
 	return Promise.resolve([images, options]);
 }
 
@@ -298,12 +332,12 @@ function setTokens(images, options, css) {
 					case 1:
 						atRuleParent.insertBefore(atRule, singleRule);
 						break;
-					// @2x
+						// @2x
 					case 2:
 						mediaAtRule2x.append(singleRule);
 						has2x = true;
 						break;
-					// @3x
+						// @3x
 					case 3:
 						mediaAtRule3x.append(singleRule);
 						has3x = true;
@@ -350,6 +384,82 @@ function runSpriteSmith(images, options) {
 				var config = _.merge({}, options, {
 					src: _.map(images, 'path')
 				});
+
+				var checkString = [];
+
+				_.each(config.src, function (image) {
+					var checkBuffer = fs.readFileSync(image);
+					var checkHash = revHash(checkBuffer);
+					checkString.push(checkHash);
+				});
+
+				// Get the group files hash so that next step can SmartUpdate.
+				checkString = md5(_.sortBy(checkString).join('&'));
+
+				// Collect images datechanged
+				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
+
+				// Get data from cache (avoid spritesmith)
+				if (cache[checkString]) {
+					var deferred = Promise.pending();
+					var results = cache[checkString];
+					results.isFromCache = true;
+					deferred.resolve(results);
+					return deferred.promise;
+				}
+
+				// SVG SPRITES MOD.
+				if (temp.indexOf('GROUP_SVG_FLAG') > -1) {
+					var svgConfig = _.defaultsDeep({src: _.map(images, 'path')}, options.svgsprite);
+
+					var spriter = new SVGSpriter(svgConfig);
+
+					_.forEach(images, function (item) {
+						spriter.add(item.path, null, fs.readFileSync(item.path, {encoding: 'utf-8'}));
+					});
+
+					return Promise.promisify(spriter.compile, {
+						context: spriter,
+						multiArgs: true
+					})().spread(function (result, data) {
+						var spritesheet = {};
+						spritesheet.extension = 'svg';
+						spritesheet.coordinates = {};
+						spritesheet.image = result.css.sprite.contents;
+						spritesheet.properties = {
+							width: data.css.spriteWidth,
+							height: data.css.spriteHeight
+						};
+
+						data.css.shapes.forEach(function (shape) {
+							spritesheet.coordinates[Buffer.from(shape.name, 'base64').toString()] = {
+								width: shape.width.outer,
+								height: shape.height.outer,
+								x: shape.position.absolute.x,
+								y: shape.position.absolute.y
+							};
+						});
+
+						return spritesheet;
+					}).then(function (result) {
+						temp = temp.split(GROUP_DELIMITER);
+						temp.shift();
+						// Append info about sprite group
+						result.groups = temp.map(mask(false));
+						var oldCheckString = cacheIndex[config.spriteName];
+						if (oldCheckString && cache[oldCheckString]) {
+							delete cache[oldCheckString];
+						}
+
+						// Cache - add brand new data
+						cacheIndex[config.spriteName] = checkString;
+						cache[checkString] = result;
+						return result;
+					});
+				}
+
+				// NORMAL MOD (spritesmith)
+
 				var ratio;
 
 				// Enlarge padding when are retina images
@@ -365,30 +475,6 @@ function runSpriteSmith(images, options) {
 					}
 				}
 
-				var checkString = [];
-
-				_.each(config.src, function (image) {
-					var checkBuffer = fs.readFileSync(image);
-					var checkHash = revHash(checkBuffer);
-					checkString.push(checkHash);
-				});
-
-				// Get the group files hash so that next step can SmartUpdate.
-				checkString = md5(_.sortBy(checkString).join('&'));
-				config.groupHash = checkString.slice(0, 10);
-
-				// Collect images datechanged
-				config.spriteName = temp.replace(/^_./, '').replace(/.@/, '@');
-
-				// Get data from cache (avoid spritesmith)
-				if (cache[checkString]) {
-					var deferred = Promise.pending();
-					var results = cache[checkString];
-					results.isFromCache = true;
-					deferred.resolve(results);
-					return deferred.promise;
-				}
-
 				return Promise.promisify(spritesmith)(config)
 					.then(function (result) {
 						temp = temp.split(GROUP_DELIMITER);
@@ -396,9 +482,6 @@ function runSpriteSmith(images, options) {
 
 						// Append info about sprite group
 						result.groups = temp.map(mask(false));
-
-						// Pass the group file hash for next `saveSprites` function.
-						result.groupHash = config.groupHash;
 
 						// Cache - clean old
 						var oldCheckString = cacheIndex[config.spriteName];
@@ -443,7 +526,7 @@ function saveSprites(images, options, sprites) {
 		var all = _
 			.chain(sprites)
 			.map(function (sprite) {
-				sprite.path = makeSpritePath(options, sprite.groups, sprite.groupHash);
+				sprite.path = makeSpritePath(options, sprite.groups);
 				var deferred = Promise.pending();
 
 				// If this file is up to date
@@ -451,45 +534,6 @@ function saveSprites(images, options, sprites) {
 					log(options.logLevel, 'lv3', ['Lazysprite:', colors.yellow(path.relative(process.cwd(), sprite.path)), 'unchanged.']);
 					deferred.resolve(sprite);
 					return deferred.promise;
-				}
-
-				// If this sprites image file is exist. Only work when option `smartUpdate` is true.
-				if (options.smartUpdate) {
-					sprite.filename = sprite.groups.join('.') + '.' + sprite.groupHash + '.png';
-					sprite.filename = sprite.filename.replace('.@', '@');
-					if (fs.existsSync(sprite.path)) {
-						log(options.logLevel, 'lv3', ['Lazysprite:', colors.yellow(path.relative(process.cwd(), sprite.path)), 'already existed.']);
-						deferred.resolve(sprite);
-						return deferred.promise;
-					}
-
-					// After the above steps, new sprite file was created,
-					// Old sprite file has to be deleted.
-					var oldSprites = fs.readdirSync(options.spritePath);
-
-					// If it is not retina sprite,
-					// The single one of sprite should the same.
-					if (!isRetinaHashImage(sprite.path)) {
-						oldSprites = _.filter(oldSprites, function (oldSprite) {
-							return !isRetinaHashImage(oldSprite);
-						});
-					}
-
-					var spriteGroup = sprite.groups.join('.');
-					var spriteForIndex = spriteGroup.replace('.@', options.retinaInfix);
-
-					// Delete old files.
-					_.forEach(oldSprites, function (filename) {
-						var fullname = path.join(options.spritePath, filename);
-						if (fs.statSync(fullname) && (fullname.indexOf(spriteForIndex) > -1)) {
-							fs.unlink(path.join(options.spritePath, filename), function (err) {
-								if (err) {
-									return console.error(err);
-								}
-								log(options.logLevel, 'lv2', ['Lazysprite:', colors.red(path.relative(process.cwd(), path.join(options.spritePath, filename))), 'deleted.']);
-							});
-						}
-					});
 				}
 
 				// Save new file version
@@ -587,9 +631,7 @@ function updateReferences(images, options, sprites, css) {
 							backgroundImage.after(
 								postcss.decl({
 									prop: prop,
-									value: (image.ratio > 1 ?
-										image.coordinates[prop] / image.ratio :
-										image.coordinates[prop]) + 'px'
+									value: (image.ratio > 1 ? image.coordinates[prop] / image.ratio : image.coordinates[prop]) + 'px'
 								})
 							);
 						});
@@ -635,7 +677,7 @@ function getAtRuleValue(params) {
 function setSelector(image, options, dynamicBlock, retina) {
 	dynamicBlock = dynamicBlock || false;
 	retina = retina || false;
-	var basename = path.basename(image.name, '.png');
+	var basename = image.isSVG ? path.basename(image.name, '.svg') : path.basename(image.name, '.png');
 	if (retina) {
 		// If retina, then '@2x','@3x','_2x','_3x' will be removed.
 		basename = _.replace(basename, /[@_](\d)x$/, '');
@@ -653,14 +695,20 @@ function setSelector(image, options, dynamicBlock, retina) {
 }
 
 // Set the sprite file name form groups.
-function makeSpritePath(options, groups, groupHash) {
+function makeSpritePath(options, groups) {
 	var base = options.spritePath;
 	var file;
-	if (options.smartUpdate) {
-		file = path.resolve(base, groups.join('.') + '.' + groupHash + '.png');
+
+	// If is svg, do st
+	if (groups.indexOf('GROUP_SVG_FLAG') > -1) {
+		groups = _.filter(groups, function (item) {
+			return item !== 'GROUP_SVG_FLAG';
+		});
+		file = path.resolve(base, groups.join('.') + '.svg');
 	} else {
 		file = path.resolve(base, groups.join('.') + '.png');
 	}
+
 	return file.replace('.@', options.retinaInfix);
 }
 
@@ -686,8 +734,9 @@ function getBackgroundImageUrl(image) {
 
 // Return the value for background-position property
 function getBackgroundPosition(image) {
-	var x = -1 * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
-	var y = -1 * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
+	var logicValue = image.isSVG ? 1 : -1;
+	var x = logicValue * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
+	var y = logicValue * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
 	var template = _.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
 	return template({x: x, y: y});
 }
