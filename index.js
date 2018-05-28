@@ -46,7 +46,7 @@ var SVG_CONFIG = {
 	},
 	shape: {
 		id: {
-			generator(name, file) {
+			generator: function (name, file) {
 				return Buffer.from(file.path).toString('base64');
 			}
 		}
@@ -70,7 +70,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	options = _.merge({
 		cloneRaws: options.cloneRaws || {},
 		groupBy: options.groupBy || [],
-		padding: options.padding ? options.padding : 0,
+		padding: options.padding ? options.padding : 10,
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
 		outputExtralCSS: options.outputExtralCSS || false,
@@ -423,7 +423,7 @@ function runSpriteSmith(images, options) {
 					});
 				}
 
-				// NORMAL MOD
+				// NORMAL MOD (spritesmith)
 				var config = _.merge({}, options, {
 					src: _.map(images, 'path')
 				});
@@ -664,9 +664,7 @@ function updateReferences(images, options, sprites, css) {
 							backgroundImage.after(
 								postcss.decl({
 									prop: prop,
-									value: (image.ratio > 1 ?
-										image.coordinates[prop] / image.ratio :
-										image.coordinates[prop]) + 'px'
+									value: (image.ratio > 1 ? image.coordinates[prop] / image.ratio : image.coordinates[prop]) + 'px'
 								})
 							);
 						});

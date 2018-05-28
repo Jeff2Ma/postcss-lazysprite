@@ -1,0 +1,36 @@
+.doc__excel {
+    background-image: url(../sprites/docs.png);
+    background-position: 0 0;
+    width: 32px;
+    height: 32px
+}
+.doc__pdf {
+    background-image: url(../sprites/docs.svg);
+    background-position: -32px 0;
+    width: 32px;
+    height: 32px
+}
+.doc__ppt {
+    background-image: url(../sprites/docs.png);
+    background-position: -42px 0;
+    width: 32px;
+    height: 32px
+}
+.doc__word {
+    background-image: url(../sprites/docs.svg);
+    background-position: 0 0;
+    width: 32px;
+    height: 32px
+}
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 2dppx), only screen and (min-resolution: 192dpi) {
+    .doc__excel {
+        background-image: url(../sprites/docs@2x.png);
+        background-position: 0 0;
+        background-size: 74px 32px
+    }
+    .doc__ppt {
+        background-image: url(../sprites/docs@2x.png);
+        background-position: -42px 0;
+        background-size: 74px 32px
+    }
+}
