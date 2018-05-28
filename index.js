@@ -9,6 +9,7 @@ var revHash = require('rev-hash');
 var Promise = require('bluebird');
 var colors = require('ansi-colors');
 var fancyLog = require('fancy-log');
+var SVGSpriter = require('svg-sprite');
 
 var space = postcss.list.space;
 Promise.promisifyAll(fs);
@@ -31,6 +32,29 @@ var resolutions3x = [
 
 var GROUP_DELIMITER = '.';
 var GROUP_MASK = '*';
+var GROUP_SVG_FLAG = '@svgGroup';
+
+var SVG_CONFIG = {
+	mode: {
+		css: {
+			dimensions: true,
+			bust: false,
+			render: {
+				css: true
+			}
+		}
+	},
+	shape: {
+		id: {
+			generator(name, file) {
+				return Buffer.from(file.path).toString('base64');
+			}
+		}
+	},
+	svg: {
+		precision: 5
+	}
+};
 
 // Cache objects
 var cache = {};
@@ -46,7 +70,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 	options = _.merge({
 		cloneRaws: options.cloneRaws || {},
 		groupBy: options.groupBy || [],
-		padding: options.padding ? options.padding : 10,
+		padding: options.padding ? options.padding : 0,
 		nameSpace: options.nameSpace || '',
 		outputDimensions: options.outputDimensions || true,
 		outputExtralCSS: options.outputExtralCSS || false,
@@ -87,6 +111,9 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		}
 		return null;
 	});
+
+	// Svg sprite config
+	options.svgsprite = SVG_CONFIG;
 
 	// Processer
 	return function (css) {
@@ -173,7 +200,7 @@ function extractImages(css, options) {
 		files = _.orderBy(files); // Fix orders issue in mac and win's difference.
 		_.forEach(files, function (filename) {
 			// Have to be png file
-			var reg = /\.(png)\b/i;
+			var reg = /\.(png|svg)\b/i;
 			if (!reg.test(filename)) {
 				return null;
 			}
@@ -184,6 +211,7 @@ function extractImages(css, options) {
 				stylesheetRelative: stylesheetRelative,
 				ratio: 1,
 				groups: [],
+				isSVG: false,
 				token: ''
 			};
 
@@ -193,6 +221,13 @@ function extractImages(css, options) {
 			// .pop() to get the last element in array
 			image.dir = imageDir.split(path.sep).pop();
 			image.groups = [image.dir];
+
+			// For svg file
+			if (/^\.svg/.test(path.extname(filename))) {
+				image.isSVG = true;
+				image.groups.push('GROUP_SVG_FLAG');
+			}
+
 			image.selector = setSelector(image, options, atRuleValue[1]);
 
 			// Get absolute path of image
@@ -208,7 +243,6 @@ function extractImages(css, options) {
 			images.push(image);
 		});
 	});
-
 	return Promise.resolve([images, options]);
 }
 
@@ -298,12 +332,12 @@ function setTokens(images, options, css) {
 					case 1:
 						atRuleParent.insertBefore(atRule, singleRule);
 						break;
-					// @2x
+						// @2x
 					case 2:
 						mediaAtRule2x.append(singleRule);
 						has2x = true;
 						break;
-					// @3x
+						// @3x
 					case 3:
 						mediaAtRule3x.append(singleRule);
 						has3x = true;
@@ -347,6 +381,49 @@ function runSpriteSmith(images, options) {
 				return temp.join(GROUP_DELIMITER);
 			})
 			.map(function (images, temp) {
+				// SVG SPRITES MOD.
+				if (temp.indexOf('GROUP_SVG_FLAG') > -1) {
+					var svgConfig = _.defaultsDeep({src: _.map(images, 'path')}, options.svgsprite);
+
+					var spriter = new SVGSpriter(svgConfig);
+
+					_.forEach(images, function (item) {
+						spriter.add(item.path, null, fs.readFileSync(item.path, {encoding: 'utf-8'}));
+					});
+
+					return Promise.promisify(spriter.compile, {
+						context: spriter,
+						multiArgs: true
+					})().spread(function (result, data) {
+						var spritesheet = {};
+						spritesheet.extension = 'svg';
+						spritesheet.coordinates = {};
+						spritesheet.image = result.css.sprite.contents;
+						spritesheet.properties = {
+							width: data.css.spriteWidth,
+							height: data.css.spriteHeight
+						};
+
+						data.css.shapes.forEach(function (shape) {
+							spritesheet.coordinates[Buffer.from(shape.name, 'base64').toString()] = {
+								width: shape.width.outer,
+								height: shape.height.outer,
+								x: shape.position.absolute.x,
+								y: shape.position.absolute.y
+							};
+						});
+
+						return spritesheet;
+					}).then(function (result) {
+						temp = temp.split(GROUP_DELIMITER);
+						temp.shift();
+						// Append info about sprite group
+						result.groups = temp.map(mask(false));
+						return result;
+					});
+				}
+
+				// NORMAL MOD
 				var config = _.merge({}, options, {
 					src: _.map(images, 'path')
 				});
@@ -635,7 +712,7 @@ function getAtRuleValue(params) {
 function setSelector(image, options, dynamicBlock, retina) {
 	dynamicBlock = dynamicBlock || false;
 	retina = retina || false;
-	var basename = path.basename(image.name, '.png');
+	var basename = image.isSVG ? path.basename(image.name, '.svg') : path.basename(image.name, '.png');
 	if (retina) {
 		// If retina, then '@2x','@3x','_2x','_3x' will be removed.
 		basename = _.replace(basename, /[@_](\d)x$/, '');
@@ -656,11 +733,17 @@ function setSelector(image, options, dynamicBlock, retina) {
 function makeSpritePath(options, groups, groupHash) {
 	var base = options.spritePath;
 	var file;
-	if (options.smartUpdate) {
-		file = path.resolve(base, groups.join('.') + '.' + groupHash + '.png');
+
+	// If is svg, do st
+	if (groups.indexOf('GROUP_SVG_FLAG') > -1) {
+		groups = _.filter(groups, function (item) {
+			return item !== 'GROUP_SVG_FLAG';
+		});
+		file = path.resolve(base, groups.join('.') + '.svg');
 	} else {
-		file = path.resolve(base, groups.join('.') + '.png');
+		file = path.resolve(base, groups.join('.') + (options.smartUpdate ? groupHash : '') + '.png');
 	}
+
 	return file.replace('.@', options.retinaInfix);
 }
 
@@ -686,8 +769,9 @@ function getBackgroundImageUrl(image) {
 
 // Return the value for background-position property
 function getBackgroundPosition(image) {
-	var x = -1 * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
-	var y = -1 * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
+	var logicValue = image.isSVG ? 1 : -1;
+	var x = logicValue * (image.ratio > 1 ? image.coordinates.x / image.ratio : image.coordinates.x);
+	var y = logicValue * (image.ratio > 1 ? image.coordinates.y / image.ratio : image.coordinates.y);
 	var template = _.template('<%= (x ? x + "px" : x) %> <%= (y ? y + "px" : y) %>');
 	return template({x: x, y: y});
 }

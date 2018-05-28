@@ -26,8 +26,8 @@ gulp.task('htmlcopy', function () {
 });
 
 gulp.task('test', function () {
-	return gulp.src('test/*.js', { read: false })
-		.pipe(mocha({ timeout: 1000000 }));
+	return gulp.src('test/*.js', {read: false})
+		.pipe(mocha({timeout: 1000000}));
 });
 
 gulp.task('css', function () {
@@ -39,7 +39,6 @@ gulp.task('css', function () {
 			stylesheetRelative: './examples/dist/css',
 			spritePath: './examples/dist/sprites',
 			outputExtralCSS: true,
-			smartUpdate: true,
 			nameSpace: 'icon-',
 			logLevel: 'debug'
 		})]))
@@ -50,6 +49,6 @@ gulp.task('css', function () {
 gulp.task('default', ['htmlcopy', 'css', 'watch']);
 
 gulp.task('watch', function () {
-	// gulp.watch(watchFiles, ['css', 'test', 'lint']);
+	// Gulp.watch(watchFiles, ['css', 'test', 'lint']);
 	gulp.watch(watchFiles, ['css', 'lint']);
 });

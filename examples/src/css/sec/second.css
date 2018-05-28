@@ -32,3 +32,8 @@ h2 {
  * look at the #brach which will be rename as the block className.
  */
 @lazysprite 'logo#branch';
+
+/**
+ * all svg file with diff sizes.
+ */
+@lazysprite 'apps#app';
