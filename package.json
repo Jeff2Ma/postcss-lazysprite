@@ -1,12 +1,14 @@
 {
   "name": "postcss-lazysprite",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A PostCSS plugin that generates sprites from the directory of images automatically.",
   "main": "index.js",
   "engines": {
     "node": ">=6"
   },
   "directories": {
+    "dev": "gulp",
+    "start": "gulp",
     "test": "test"
   },
   "dependencies": {

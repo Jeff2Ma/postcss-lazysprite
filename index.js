@@ -100,6 +100,11 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 			' Please set it and restart.')]);
 	}
 
+	// Option `smartUpdate` is deprecated
+	if (options.smartUpdate) {
+		throw log(options.logLevel, 'lv1', ['Lazysprite:', colors.red('Option `smartUpdate` is deprecated since v2.0!')]);
+	}
+
 	// Paths
 	options.imagePath = path.resolve(process.cwd(), options.imagePath || '');
 	options.spritePath = path.resolve(process.cwd(), options.spritePath || '');
@@ -393,7 +398,7 @@ function runSpriteSmith(images, options) {
 					checkString.push(checkHash);
 				});
 
-				// Get the group files hash so that next step can SmartUpdate.
+				// Get the group files hash.
 				checkString = md5(_.sortBy(checkString).join('&'));
 
 				// Collect images datechanged
