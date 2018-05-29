@@ -78,10 +78,12 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
     │   └── index.html
     └── slice
         └── filetype
-            ├── doc.png
-            ├── doc@2x.png
-            ├── pdf.png
-            └── pdf@2x.png
+			├── excel.png
+			├── excel_2x.png
+			├── pdf.svg
+			├── ppt.png
+			├── ppt@2x.png
+			└── word.svg
 ```
 
 More examples with different options: [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md), [pseudoClass](./examples/pseudoClass.md)
@@ -112,7 +114,7 @@ More examples with different options: [nameSpace](./examples/nameSpace.md), [out
 ## Installation
 
 ```bash
-npm install postcss-lazysprite --save-dev
+npm install postcss-lazysprite --save
 ```
 
 ## Usage

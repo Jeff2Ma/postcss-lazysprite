@@ -10,3 +10,4 @@ examples
 gulpfile.js
 .travis.yml
 appveyor.yml
+yarn.lock
