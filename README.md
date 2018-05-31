@@ -13,6 +13,8 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
 
 ## Example
 
+[Demo Example](https://res.devework.com/2018/postcss-lazysprite/html/index.html)
+
 ### Input
 
 ```CSS
@@ -68,7 +70,7 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
 > Just a example for above output result, you can dynamic yourself with options.
 
 ```
-.
+.			
 ├── gulpfile.js
 ├── dist
 └── src
@@ -78,12 +80,12 @@ A lazy way to generate sprites and proper CSS with retina support. Feel free to 
     │   └── index.html
     └── slice
         └── filetype
-			├── excel.png
-			├── excel_2x.png
-			├── pdf.svg
-			├── ppt.png
-			├── ppt@2x.png
-			└── word.svg
+            ├── excel.png
+            ├── excel_2x.png
+            ├── pdf.svg
+            ├── ppt.png
+            ├── ppt@2x.png
+            └── word.svg
 ```
 
 More examples with different options: [nameSpace](./examples/nameSpace.md), [outputDimensions](./examples/outputDimensions.md), [dynamicClassBlock](./examples/dynamicClassBlock.md), [pseudoClass](./examples/pseudoClass.md)
@@ -94,7 +96,7 @@ More examples with different options: [nameSpace](./examples/nameSpace.md), [out
 
 - Retina support (`@2x`, `@3x`, `_2x`, `_3x` are all available).
 
-- Support SVG Sprites.
+- Support SVG Sprites. [Demo](https://res.devework.com/2018/postcss-lazysprite/html/index.html)
 
 - Fully work well with Source Map.
 

@@ -204,7 +204,7 @@ function extractImages(css, options) {
 		var files = fs.readdirSync(imageDir);
 		files = _.orderBy(files); // Fix orders issue in mac and win's difference.
 		_.forEach(files, function (filename) {
-			// Have to be png file
+			// Have to be png or svg file
 			var reg = /\.(png|svg)\b/i;
 			if (!reg.test(filename)) {
 				return null;
