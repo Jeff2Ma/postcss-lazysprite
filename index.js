@@ -47,7 +47,7 @@ var SVG_CONFIG = {
 	shape: {
 		id: {
 			generator: function (name, file) {
-				return Buffer.from(file.path).toString('base64');
+				return path.relative(process.cwd(), file.path);
 			}
 		}
 	},
@@ -437,7 +437,7 @@ function runSpriteSmith(images, options) {
 						};
 
 						data.css.shapes.forEach(function (shape) {
-							spritesheet.coordinates[Buffer.from(shape.name, 'base64').toString()] = {
+							spritesheet.coordinates[path.join(process.cwd(), shape.name)] = {
 								width: shape.width.outer,
 								height: shape.height.outer,
 								x: shape.position.absolute.x,
