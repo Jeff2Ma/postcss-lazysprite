@@ -27,7 +27,7 @@
     "eslint": "^5.0.0",
     "eslint-config-xo": "^0.22.1",
     "gulp": "^3.9.1",
-    "gulp-eslint": "^4.0.1",
+    "gulp-eslint": "^5.0.0",
     "gulp-mocha": "^6.0.0",
     "gulp-postcss": "^7.0.0",
     "gulp-sourcemaps": "^2.4.1",
