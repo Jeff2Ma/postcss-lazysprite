@@ -3,6 +3,14 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [2.1.4] - 2018-06-08
+
+- Update Dependencies.
+
+## [2.1.0] - 2018-06-08
+
+- Fix svg id different in win / mac.
+
 ## [2.0.0] - 2018-06-01
 
 - Support for SVG Sprites.
