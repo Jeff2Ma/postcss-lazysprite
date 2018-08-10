@@ -29,7 +29,7 @@
     "gulp": "^3.9.1",
     "gulp-eslint": "^5.0.0",
     "gulp-mocha": "^6.0.0",
-    "gulp-postcss": "^7.0.0",
+    "gulp-postcss": "^8.0.0",
     "gulp-sourcemaps": "^2.4.1",
     "mocha": "^5.2.0",
     "should": "^13.1.2",
