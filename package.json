@@ -18,7 +18,7 @@
     "lodash": "^4.17.4",
     "mkdirp": "^0.5.1",
     "postcss": "^7.0.8",
-    "rev-hash": "^2.0.0",
+    "rev-hash": "^3.0.0",
     "spark-md5": "^3.0.0",
     "spritesmith": "^3.2.1",
     "svg-sprite": "1.5.0"
