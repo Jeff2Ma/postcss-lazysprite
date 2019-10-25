@@ -24,7 +24,7 @@
     "svg-sprite": "1.5.0"
   },
   "devDependencies": {
-    "eslint": "^5.14.1",
+    "eslint": "^6.6.0",
     "eslint-config-xo": "^0.26.0",
     "gulp": "3.9.1",
     "gulp-eslint": "^5.0.0",
