@@ -3,6 +3,10 @@
 
 Change log for postcss-lazysprite. [Details at Github](https://github.com/Jeff2Ma/postcss-lazysprite)
 
+## [2.3.0] - 2020-04-26
+
+- Add `keepBackGroundSize` option.
+
 ## [2.1.4] - 2018-06-08
 
 - Update Dependencies.

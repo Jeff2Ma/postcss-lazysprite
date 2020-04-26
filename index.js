@@ -78,7 +78,8 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		retinaInfix: options.retinaInfix || '@', // Decide '@2x' or '_2x'
 		logLevel: options.logLevel || 'info', // 'debug','info','slient'
 		cssSeparator: options.cssSeparator || '__', // Separator between block and element.
-		pseudoClass: options.pseudoClass || false
+		pseudoClass: options.pseudoClass || false,
+		keepBackGroundSize: options.keepBackGroundSize || false
 	}, options);
 
 	// Option `stylesheetPath` is deprecated,
@@ -114,6 +115,7 @@ module.exports = postcss.plugin('postcss-lazysprite', function (options) {
 		if (image.ratio > 1) {
 			return '@' + image.ratio + 'x';
 		}
+
 		return null;
 	});
 
@@ -264,6 +266,7 @@ function applyGroupBy(images, options) {
 				if (group) {
 					image.groups.push(group);
 				}
+
 				return image;
 			}).catch(function (image) {
 				return image;
@@ -357,6 +360,7 @@ function setTokens(images, options, css) {
 			if (has2x) {
 				atRuleParent.insertBefore(atRule, mediaAtRule2x);
 			}
+
 			if (has3x) {
 				atRuleParent.insertBefore(atRule, mediaAtRule3x);
 			}
@@ -644,12 +648,14 @@ function updateReferences(images, options, sprites, css) {
 
 					backgroundImage.after(backgroundPosition);
 
-          backgroundSize = postcss.decl({
-            prop: 'background-size',
-            value: getBackgroundSize(image)
-          });
+					if (image.ratio > 1 || options.keepBackGroundSize) {
+						backgroundSize = postcss.decl({
+							prop: 'background-size',
+							value: getBackgroundSize(image)
+						});
 
-          backgroundPosition.after(backgroundSize);
+						backgroundPosition.after(backgroundSize);
+					}
 				}
 			}
 		});
@@ -671,6 +677,7 @@ function getAtRuleValue(params) {
 		value = value.split('#');
 		return value;
 	}
+
 	array.push(value);
 	return array;
 }
@@ -685,6 +692,7 @@ function setSelector(image, options, dynamicBlock, retina) {
 		// If retina, then '@2x','@3x','_2x','_3x' will be removed.
 		basename = _.replace(basename, /[@_](\d)x$/, '');
 	}
+
 	var selector = (dynamicBlock ? dynamicBlock : image.dir) + options.cssSeparator + basename;
 	if (options.pseudoClass) {
 		if (image.name.toLowerCase().indexOf('hover') > -1 || image.name.toLowerCase().indexOf('active') > -1) {
@@ -694,6 +702,7 @@ function setSelector(image, options, dynamicBlock, retina) {
 			selector = _.replace(selector, '_active', ':active');
 		}
 	}
+
 	return selector;
 }
 
@@ -785,6 +794,7 @@ function getRetinaRatio(url) {
 	if (!matches) {
 		return 1;
 	}
+
 	var ratio = _.parseInt(matches[1]);
 	return ratio;
 }
@@ -795,6 +805,7 @@ function getRetinaInfix(name) {
 	if (!matches) {
 		return '@';
 	}
+
 	return matches[1];
 }
 
@@ -814,15 +825,18 @@ function log(logLevel, level, content) {
 		if (level !== 'lv1') {
 			output = false;
 		}
+
 		break;
 	case 'info':
 		if (level === 'lv3') {
 			output = false;
 		}
+
 		break;
 	default:
 		output = true;
 	}
+
 	if (output) {
 		var data = Array.prototype.slice.call(content);
 		fancyLog.apply(false, data);

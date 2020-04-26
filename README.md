@@ -249,6 +249,12 @@ when set this option as `true`, the html sould like:
 - Default: `true`
 - Required: `false`
 
+#### keepBackGroundSize
+
+> add `background-size` attribute when 1x.
+
+- Default: `false`
+- Required: `false`
 
 ## Contributing
 
