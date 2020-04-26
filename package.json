@@ -31,7 +31,7 @@
     "gulp-mocha": "^6.0.0",
     "gulp-postcss": "^8.0.0",
     "gulp-sourcemaps": "^2.6.5",
-    "mocha": "^6.0.0",
+    "mocha": "^7.1.2",
     "should": "^13.1.2",
     "through2": "^3.0.0",
     "vinyl-fs": "^3.0.3"
