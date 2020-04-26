@@ -644,14 +644,12 @@ function updateReferences(images, options, sprites, css) {
 
 					backgroundImage.after(backgroundPosition);
 
-					if (image.ratio > 1) {
-						backgroundSize = postcss.decl({
-							prop: 'background-size',
-							value: getBackgroundSize(image)
-						});
+          backgroundSize = postcss.decl({
+            prop: 'background-size',
+            value: getBackgroundSize(image)
+          });
 
-						backgroundPosition.after(backgroundSize);
-					}
+          backgroundPosition.after(backgroundSize);
 				}
 			}
 		});
